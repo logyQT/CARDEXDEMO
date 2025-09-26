@@ -1,0 +1,146 @@
+<!-- Move the temp upload hrs div into the sidebar panel -->
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <!-- <style>
+            /* Only show the app if the aspect ratio is exactly 16:9 */
+            @media (aspect-ratio: 16/9) {
+                html,
+                body {
+                    min-height: 100vh;
+                }
+            }
+            /* Hide the app and show a message if not 16:9 */
+            @media not all and (aspect-ratio: 16/9) {
+                body {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    min-height: 100vh;
+                    background: #111;
+                }
+                .container,
+                .app,
+                .main,
+                .sidebar,
+                #inventory-modal {
+                    display: none !important;
+                }
+                body::before {
+                    content: "This website is only viewable on a 16:9 aspect ratio screen.";
+                    color: #fff;
+                    background: #222;
+                    padding: 32px 48px;
+                    border-radius: 12px;
+                    font-size: 1.5rem;
+                    font-family: sans-serif;
+                    text-align: center;
+                    box-shadow: 0 4px 32px rgba(0, 0, 0, 0.5);
+                }
+            }
+        </style> -->
+        <title>CarDex — Demo</title>
+        <link href="./style.css" rel="stylesheet" />
+        <script src="libs/sqljs/sql-wasm.js"></script>
+        <script src="./script.js" defer type="module"></script>
+        <style>
+            /* Simple modal styles for inventory window */
+            #inventory-modal {
+                display: none;
+                position: fixed;
+                z-index: 1000;
+                left: 0;
+                top: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(0, 0, 0, 0.5);
+                justify-content: center;
+                align-items: center;
+            }
+            #inventory-content {
+                background: #222;
+                padding: 24px;
+                border-radius: 8px;
+                min-width: 300px;
+                min-height: 200px;
+                color: #fff;
+                position: relative;
+            }
+            #close-inventory {
+                position: absolute;
+                top: 8px;
+                right: 8px;
+                background: #444;
+                border: none;
+                color: #fff;
+                border-radius: 4px;
+                cursor: pointer;
+                padding: 4px 8px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="app">
+                <div class="sidebar">
+                    <div class="title">CARDEX</div>
+                    <div class="tabs">
+                        <div class="tab active" data-mode="model">MODEL</div>
+                        <div class="tab" data-mode="year">YEAR</div>
+                        <div class="tab" data-mode="color">COLOR</div>
+                        <div class="tab" data-mode="type">TROPHY TYPE</div>
+                    </div>
+                    <hr style="border: none; height: 8px" />
+                    <div class="panel">
+                        <div style="font-weight: 700; margin-bottom: 8px">Inventory</div>
+                        <button id="view-inventory-btn" class="primary">View Inventory</button>
+                        <!-- <div class="small">Trophies detected: <span id="inv-count">0</span></div> -->
+                        <button id="add-random" class="primary">Add Random Trophy</button>
+                        <button id="slot-trophy" class="primary">Fill All Slots</button>
+                        <input type="file" id="mediaInput" accept=".hrs" />
+                        <label for="mediaInput" id="mediaInputLabel" class="primary">Load Save File</label>
+                    </div>
+                </div>
+
+                <div class="main">
+                    <div class="top-bar">
+                        <div class="progresswrap">
+                            <div class="small" id="progress-text">CarDex Completion: <strong id="percent">0%</strong></div>
+                            <div class="bar">
+                                <i id="bar-fill">
+                                    <!-- <span id="bar-text">0/0</span> -->
+                                </i>
+                            </div>
+                        </div>
+                        <div id="pagination-controls"></div>
+                    </div>
+                    <!-- <div class="controls">
+                        <input id="filter" placeholder="Filter model / year / color" />
+                        <select id="sort">
+                            <option value="model">Sort: Model</option>
+                            <option value="year">Sort: Year</option>
+                            <option value="color">Sort: Color</option>
+                        </select>
+                        <button class="primary" id="open-cardex">Open CarDex</button>
+                    </div> -->
+
+                    <div class="grid" id="grid"></div>
+                </div>
+            </div>
+
+            <div id="inventory-modal">
+                <div id="inventory-content">
+                    <button id="close-inventory">Close</button>
+                    <h2>Inventory</h2>
+                    <div id="inventory-list">No trophies yet.</div>
+                </div>
+            </div>
+        </div>
+        <footer>
+            CarDex Demo &middot; Developed by logy80 &middot; <a href="https://github.com/your-repo" class="muted" style="text-decoration: none">GitHub</a> &middot; Special thanks to .faulty. for providing mappings and game assets.
+            <p>This website is an independent project and is not affiliated with, endorsed by, or associated with the developers or publishers of Car Dealer Simulator.</p>
+        </footer>
+    </body>
+</html>

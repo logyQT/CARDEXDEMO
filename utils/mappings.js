@@ -1,0 +1,65 @@
+const E_CarBrand = {
+    NewEnumerator0: "Apex Motors",
+    NewEnumerator1: "UMX",
+    NewEnumerator2: "Off Rider",
+    NewEnumerator3: "Phantom",
+    NewEnumerator7: "Harmonia Vehicles",
+    NewEnumerator8: "NGD",
+    NewEnumerator9: "Zen Motors",
+    NewEnumerator10: "Cargo Wise",
+    NewEnumerator11: "Tow",
+    NewEnumerator12: "Cavallaro",
+    NewEnumerator14: "Ardena",
+};
+
+const E_CarModel = {
+    NewEnumerator0: "Striker",
+    NewEnumerator1: "Vanguard",
+    NewEnumerator2: "600C",
+    NewEnumerator3: "Boulder",
+    NewEnumerator4: "Canyon",
+    NewEnumerator5: "Andante",
+    NewEnumerator6: "Pulse",
+    NewEnumerator7: "Largo",
+    NewEnumerator8: "Allegretto",
+    NewEnumerator9: "Journey",
+    NewEnumerator10: "Thunder",
+    NewEnumerator11: "P3",
+    NewEnumerator12: "P4",
+    NewEnumerator13: "Truck",
+    NewEnumerator14: "280G",
+    NewEnumerator15: "Gale",
+    NewEnumerator16: "Cortega",
+    NewEnumerator17: "Voyager",
+    NewEnumerator18: "P2",
+    NewEnumerator19: "Ignis",
+    NewEnumerator20: "Ridge",
+};
+
+const E_VehiclePaintColor = {
+    NewEnumerator0: "Black",
+    NewEnumerator1: "Silver",
+    NewEnumerator2: "Red",
+    NewEnumerator3: "Blue",
+    NewEnumerator4: "Purple",
+    NewEnumerator5: "NavyBlue",
+    NewEnumerator7: "White",
+    NewEnumerator8: "Gray",
+    NewEnumerator9: "Gold",
+    NewEnumerator10: "Green",
+    NewEnumerator11: "Brown",
+    NewEnumerator12: "Orange",
+    NewEnumerator13: "Yellow",
+    NewEnumerator14: "Graphite",
+    NewEnumerator15: "Light-Blue",
+    NewEnumerator16: "Light-Green",
+};
+
+const E_TrophyType = {
+    NewEnumerator0: "Common",
+    NewEnumerator1: "Silver",
+    NewEnumerator2: "Gold",
+    NewEnumerator3: "Diamond",
+    NewEnumerator4: "Rust",
+};
+export { E_CarBrand, E_CarModel, E_VehiclePaintColor, E_TrophyType };
