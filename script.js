@@ -1,10 +1,13 @@
 import { E_CarBrand, E_CarModel, E_VehiclePaintColor, E_TrophyType } from "./utils/mappings.js";
 import { carData } from "./carData.js";
-import { disableDrag, getTrophyImage, animateCards, updateProgressBar, renderPaginationControls, generateAllTrophySlots } from "./utils/index.js";
+import { walkObjectParseJson, getDatabase, disableDrag, getTrophyImage, animateCards, updateProgressBar, renderPaginationControls, generateAllTrophySlots, getMatchingItemsInInventory } from "./utils/index.js";
 
 let db = null;
+let SaveObject = {};
 let trophyInventory = [];
 let mode = "model"; // Default mode
+const TROPHY_PRODUCT_ID = "VehicleTrophy";
+const MEDIA_INPUT = document.getElementById("mediaInput");
 
 const matchTrophy = (slot, trophy, mode, trophyInventory) => {
     const trophyPriority = ["Common", "Rust", "Silver", "Gold", "Diamond"];
@@ -136,82 +139,62 @@ if (!document.getElementById("pagination-controls")) {
 }
 
 const normalizeTrophyData = (trophy) => {
-    trophy.brand = E_CarBrand[trophy.brand];
-    trophy.model = E_CarModel[trophy.model];
-    trophy.color = E_VehiclePaintColor[trophy.color];
-    trophy.type = E_TrophyType[trophy.type];
+    trophy.brand = E_CarBrand[trophy.brand] || E_CarBrand["NewEnumerator0"];
+    trophy.model = E_CarModel[trophy.model] || E_CarModel["NewEnumerator0"];
+    trophy.color = E_VehiclePaintColor[trophy.paintColor] || E_VehiclePaintColor["NewEnumerator0"];
+    trophy.type = E_TrophyType[trophy.trophyType] || E_TrophyType["NewEnumerator0"];
+    trophy.year = parseInt(trophy.productionYear) || 0;
     return trophy;
 };
 
 const parseTrophyString = (str) => {
-    const match = str.match(/\((.*)\)/);
-    if (!match) {
-        throw new Error(`No match found: ${match}`);
+    const inside = str.match(/\((.*)\)/)?.[1];
+    if (!inside) {
+        console.warn("Invalid trophy string format:", str);
+        return;
     }
 
-    const content = match[1];
-    const parts = content.split(",");
+    const entries = inside.split(",");
 
-    let result = {
-        brand: "NewEnumerator0",
-        model: "NewEnumerator0",
-        year: 0,
-        color: "NewEnumerator0",
-        type: "NewEnumerator0",
-    };
+    const obj = {};
+    for (const entry of entries) {
+        const [rawKey, value] = entry.split("=");
+        if (!rawKey || !value) continue;
 
-    for (const part of parts) {
-        let [key, value] = part.split("=");
+        const cleanKey = rawKey.split("_")[0];
 
-        if (!key || value === undefined) continue;
+        const key = cleanKey.charAt(0).toLowerCase() + cleanKey.slice(1);
 
-        if (key.startsWith("Brand")) {
-            result.brand = value;
-        } else if (key.startsWith("Model")) {
-            result.model = value;
-        } else if (key.startsWith("ProductionYear")) {
-            result.year = parseInt(value, 10);
-        } else if (key.startsWith("PaintColor")) {
-            result.color = value;
-        } else if (key.startsWith("TrophyType")) {
-            result.type = value;
-        }
+        obj[key] = value;
     }
 
-    return normalizeTrophyData(result);
+    return normalizeTrophyData(obj);
 };
 
-const getRawInventory = async () => {
+const getAllTrophies = async () => {
+    // reset trophy inventory on refresh
+    // temporary fix for duplicate trophies showing up in inventory until this gets modularized properly
+    trophyInventory = [];
     let items = [];
-    const query_result = await db.exec(`SELECT * FROM table_additional_systems`);
-    const allVehicles = JSON.parse(query_result[0].values[2][2]).VehicleInfo;
-    let playerOwnedVehicles = allVehicles.filter((v) => v.playerOwned && "Vehicle" in v);
-    for (let vehicle_id in playerOwnedVehicles) {
-        let vehicle = playerOwnedVehicles[vehicle_id];
-        let vehicleInventory = JSON.parse(vehicle?.Vehicle?.ItemContainer)?.Items?.itemsJsons;
-        for (let item_id in vehicleInventory) {
-            let item = vehicleInventory[item_id];
-            if (item.productId === "VehicleTrophy") items.push(item);
-        }
-    }
+    // Player owned vehicles loaded in the world
+    let playerOwnedVehicles = SaveObject.VehicleSystem.VehicleInfo.filter((v) => v.playerOwned && "Vehicle" in v);
+    playerOwnedVehicles.forEach((v) => {
+        getMatchingItemsInInventory(v.Vehicle, TROPHY_PRODUCT_ID).forEach((trophy) => items.push(trophy));
+    });
+    // Player Storage
+    getMatchingItemsInInventory({ ItemContainer: SaveObject.PlayerStorage }, TROPHY_PRODUCT_ID).forEach((trophy) => items.push(trophy));
+    // Trophy Shelf
+    getMatchingItemsInInventory(SaveObject.AdditionalGameData.TrophyShelf, TROPHY_PRODUCT_ID).forEach((trophy) => items.push(trophy));
 
-    const warehouseInventory = JSON.parse(query_result[0].values[6][2]).Items.itemsJsons;
-    for (let item_id in warehouseInventory) {
-        let item = warehouseInventory[item_id];
-        if (item.productId === "VehicleTrophy") items.push(item);
-    }
+    const garageVehicles = SaveObject.AdditionalGameData.UndergroundGarageCarStorage.VehicleInfo;
 
-    const trophyCabinetInventory = JSON.parse(JSON.parse(query_result[0].values[3][2]).TrophyShelf.ItemContainer).Items.itemsJsons;
-
-    for (let item_id in trophyCabinetInventory) {
-        let item = trophyCabinetInventory[item_id];
-        if (item.productId === "VehicleTrophy") items.push(item);
-    }
+    garageVehicles.forEach((v) => {
+        getMatchingItemsInInventory(v.garageVehicleJsonData, TROPHY_PRODUCT_ID).forEach((trophy) => items.push(trophy));
+    });
 
     for (const item_id in items) {
-        trophyInventory.push(parseTrophyString(JSON.parse(items[item_id].json).customData));
+        trophyInventory.push(parseTrophyString(items[item_id].json.customData));
     }
-    //console.log(trophyInventory);
 };
 
 const populateInventoryList = () => {
@@ -226,11 +209,9 @@ const populateInventoryList = () => {
 };
 
 const updateProgress = () => {
-    // Calculate progress based on all slots, not just visible ones
     const slots = generateAllTrophySlots(mode, carData);
     let owned = 0;
 
-    // Mark owned slots based on trophyInventory
     trophyInventory.forEach((trophy) => {
         slots.forEach((slot) => {
             if (matchTrophy(slot, trophy, mode, trophyInventory)) {
@@ -250,23 +231,35 @@ const updateProgress = () => {
 
 // Load and read save file
 
-const read_save = async () => {
-    const SQL = await initSqlJs({
-        locateFile: (file) => `libs/sqljs/${file}`,
-    });
-
-    const input = document.getElementById("mediaInput");
+const read_save = async (input) => {
+    trophyInventory = [];
+    console.info("Reading save file...");
     if (!input.files || input.files.length === 0) {
         console.warn("No file selected");
         return;
     }
 
     const file = input.files[0];
-    const buffer = await file.arrayBuffer();
 
-    db = new SQL.Database(new Uint8Array(buffer));
+    db = await getDatabase(file);
+    if (!db) {
+        alert("Failed to open the database. Please ensure a valid save file is selected.");
+        return;
+    }
 
-    await getRawInventory();
+    const start = performance.now();
+    db.each(`SELECT * FROM table_additional_systems`, (row) => {
+        SaveObject[row.system_id] = walkObjectParseJson(row.json_content);
+    });
+    db.close();
+    const end = performance.now();
+    console.info(`Database query and parsing took ${(end - start).toFixed(2)} ms`);
+
+    console.info("Database loaded successfully.");
+
+    console.info(SaveObject);
+
+    await getAllTrophies();
     renderTrophySlots(trophyInventory, mode, 1);
     populateInventoryList();
     updateProgress();
@@ -287,13 +280,12 @@ tabs.forEach((tab) => {
 
 document.getElementById("view-inventory-btn").onclick = function () {
     document.getElementById("inventory-modal").style.display = "flex";
-    // You should fill #inventory-list with actual inventory data here
 };
 document.getElementById("close-inventory").onclick = function () {
     document.getElementById("inventory-modal").style.display = "none";
 };
 
-document.getElementById("mediaInput").addEventListener("change", read_save);
+MEDIA_INPUT.addEventListener("change", (event) => read_save(event.target));
 
 // Initial render with no trophies owned
 renderTrophySlots([], mode, 1);

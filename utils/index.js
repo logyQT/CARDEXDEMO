@@ -4,3 +4,6 @@ export * from "./getTrophyImage.js";
 export * from "./paginationControls.js";
 export * from "./updateProgressBar.js";
 export * from "./generateAllTrophySlots.js";
+export * from "./getMatchingItemsInInventory.js";
+export * from "./getDatabase.js";
+export * from "./walkObjectParseJson.js";
