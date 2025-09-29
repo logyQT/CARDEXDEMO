@@ -1,5 +1,5 @@
-.VSCodeCounter/
-.vscode/
-test.json
-.gitattributes
-TODO.txt
+/.VSCodeCounter/
+/.vscode/
+/test.json
+/.gitattributes
+/TODO.txt
