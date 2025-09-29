@@ -1,106 +1,87 @@
 import { E_CarBrand, E_CarModel, E_VehiclePaintColor, E_TrophyType } from "./utils/mappings.js";
 import { carData } from "./carData.js";
-import { walkObjectParseJson, getDatabase, disableDrag, getTrophyImage, animateCards, updateProgressBar, renderPaginationControls, generateAllTrophySlots, getMatchingItemsInInventory } from "./utils/index.js";
+import { generateAllInventorySlots, getMatchingTrophies, matchTrophy, getSaveObject, getDatabase, disableDrag, getTrophyImage, animateCards, updateProgressBar, renderPaginationControls, generateAllTrophySlots, getMatchingItemsInInventory } from "./utils/index.js";
 
 let db = null;
 let SaveObject = {};
 let trophyInventory = [];
+let carDex = [];
 let mode = "model"; // Default mode
+const GAME_VERSION = "#81";
+const VERSION = "2.0.1";
 const TROPHY_PRODUCT_ID = "VehicleTrophy";
 const MEDIA_INPUT = document.getElementById("mediaInput");
+const PROGRESS_BAR = document.getElementById("progress-bar");
+const PROGRESS_BAR_TEXT = document.getElementById("progress-text-value");
+const PAGINATION_CONTROLS = document.getElementById("grid-pagination-controls");
+const MODAL_PAGINATION_CONTROLS = document.getElementById("modal-pagination-controls");
+const PAGE_SIZE = 24;
 
-const matchTrophy = (slot, trophy, mode, trophyInventory) => {
-    const trophyPriority = ["Common", "Rust", "Silver", "Gold", "Diamond"];
-    if (mode === "model") {
-        if (slot.brand === trophy.brand && slot.model === trophy.model) {
-            if (!slot.owned) {
-                return true;
-            } else {
-                const currentTypeIdx = trophyPriority.indexOf(slot.type || "Common");
-                const newTypeIdx = trophyPriority.indexOf(trophy.type || "Common");
-
-                if (newTypeIdx > currentTypeIdx || (newTypeIdx === currentTypeIdx && (trophy.year || 0) > (slot.year || 0))) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    } else if (mode === "year") {
-        return slot.brand === trophy.brand && slot.model === trophy.model && slot.year === trophy.year;
-    } else if (mode === "color") {
-        // Only match if this is the most recent year trophy for this color/model/brand
-        if (slot.brand === trophy.brand && slot.model === trophy.model && slot.color === trophy.color && trophy.type === "Common") {
-            // Find all trophies for this brand/model/color/type
-            const allYears = trophyInventory.filter((t) => t.brand === slot.brand && t.model === slot.model && t.color === slot.color && t.type === "Common").map((t) => t.year || 0);
-            const maxYear = Math.max(...allYears);
-            return trophy.year === maxYear;
-        }
-        return false;
-    } else if (mode === "type") {
-        return slot.brand === trophy.brand && slot.model === trophy.model && slot.type === trophy.type;
-    }
-    return false;
+const colorLookup = {
+    Common: "rgb(255, 255, 255)",
+    Silver: "rgb(192, 192, 192)",
+    Gold: "#9F834C",
+    Diamond: "#CCE6FE",
+    Rust: "#AA8070",
 };
 
 const renderTrophySlots = (inventory, mode, currentPage) => {
-    const PAGE_SIZE = 24;
     let totalPages = 1;
-    let lastSlots = [];
 
     //const start = performance.now();
     const container = document.getElementById("grid");
     container.innerHTML = ""; // Clear previous
 
-    const slots = generateAllTrophySlots(mode, carData);
-    lastSlots = slots;
+    const slots = mode !== "inventory" ? generateAllTrophySlots(mode, carData) : generateAllInventorySlots(trophyInventory);
+    console.log(slots);
 
-    inventory.forEach((trophy) => {
-        slots.forEach((slot) => {
-            if (matchTrophy(slot, trophy, mode, trophyInventory)) {
-                slot.owned = true;
-                slot.color = trophy.color;
-                slot.type = trophy.type;
-                slot.year = trophy.year;
-            }
-        });
-    });
+    mode !== "inventory"
+        ? inventory.forEach((trophy) => {
+              slots.forEach((slot) => {
+                  if (matchTrophy(slot, trophy, mode)) {
+                      slot._color = slot.color;
+                      slot._type = slot.type;
+                      slot._year = slot.year;
+                      slot._brand = slot.brand;
+                      slot._model = slot.model;
+                      slot._name = slot.name;
+                      slot.owned = true;
+                      slot.color = trophy.color;
+                      slot.type = trophy.type;
+                      slot.year = trophy.year;
+                      slot.brand = trophy.brand;
+                      slot.model = trophy.model;
+                      slot.name = `${trophy.brand} ${trophy.model}`;
+                  }
+              });
+          })
+        : null;
 
     // Pagination logic
+
     totalPages = Math.ceil(slots.length / PAGE_SIZE) || 1;
     if (currentPage > totalPages) currentPage = totalPages;
     const startIdx = (currentPage - 1) * PAGE_SIZE;
     const endIdx = startIdx + PAGE_SIZE;
     const pageSlots = slots.slice(startIdx, endIdx);
 
-    const colorLookup = {
-        Black: "#1d1d1dff",
-        Silver: "rgb(192, 192, 192)",
-        Red: "rgb(255, 0, 0)",
-        Blue: "rgb(0, 0, 255)",
-        Purple: "rgb(128, 0, 128)",
-        NavyBlue: "rgb(0, 0, 128)",
-        White: "rgb(255, 255, 255)",
-        Gray: "rgb(128, 128, 128)",
-        Gold: "#9F834C",
-        Green: "rgb(0, 128, 0)",
-        Brown: "rgb(139, 69, 19)",
-        Orange: "rgb(255, 165, 0)",
-        Yellow: "rgb(255, 255, 0)",
-        Graphite: "rgb(54, 69, 79)",
-        "Light-Blue": "rgb(173, 216, 230)",
-        "Light-Green": "rgb(144, 238, 144)",
-        Diamond: "#CCE6FE",
-        Rust: "#AA8070",
-    };
-
     pageSlots.forEach((slot) => {
+        slot.mode = mode;
+        // add reference to original slot data for modal use
+        slot._slot = slot;
+        // console.log(slot);
         const card = document.createElement("div");
         card.className = slot.owned ? "trophy-slot owned-true" : "trophy-slot owned-false";
-        if (slot.owned && slot.type !== "Common") {
-            card.style.setProperty("--color", colorLookup[slot.type] || "rgb(40, 189, 26)");
-        } else if (slot.owned && slot.color) {
-            card.style.setProperty("--color", /*colorLookup[slot.color] ||*/ "rgba(255, 255, 255, 1)");
-        }
+        if (slot.owned) card.style.setProperty("--color", colorLookup[slot.type]);
+        card.setAttribute("title", slot.owned ? "Owned - Click to change displayed trophy" : "Not Owned - Click to view matching trophies you can claim");
+        card.setAttribute("data-owned", slot.owned);
+        card.setAttribute("data-name", slot.name);
+        card.setAttribute("data-brand", slot.brand);
+        card.setAttribute("data-model", slot.model);
+        card.setAttribute("data-year", slot.year || null);
+        card.setAttribute("data-color", slot.color || null);
+        card.setAttribute("data-type", slot.type || null);
+
         const imgColor = slot.color ? slot.color : "Black";
         const imgType = slot.type ? slot.type : "Common";
         const imgSrc = getTrophyImage(slot.brand, slot.model, imgColor, imgType);
@@ -118,33 +99,117 @@ const renderTrophySlots = (inventory, mode, currentPage) => {
             </div>
             </div>
         `;
+
         container.appendChild(card);
+        card.addEventListener("click", () => {
+            if (slot.mode === "inventory") {
+                // do nothing for now
+                // implement grouping later
+                // pressing would show all trophies found with exact same specs
+                return;
+            }
+            if (slot.owned === true) {
+                // return for now
+                // implement modal for viewing matching trophies
+                return;
+            } else {
+                const matches = getMatchingTrophies(slot, mode, trophyInventory);
+
+                displayModal(slot._slot, matches, 1);
+            }
+        });
     });
 
-    renderPaginationControls(document.getElementById("pagination-controls"), currentPage, totalPages, (newPage) => {
+    renderPaginationControls(PAGINATION_CONTROLS, currentPage, totalPages, (newPage) => {
         renderTrophySlots(inventory, mode, newPage);
     });
+
+    updateTrophyProgress();
+
     const NEW_TROPHY_ELEMENTS = document.querySelectorAll(".trophy-slot");
+
     animateCards(NEW_TROPHY_ELEMENTS);
     disableDrag(NEW_TROPHY_ELEMENTS);
 };
 
-// Add a container for pagination controls if not present
-if (!document.getElementById("pagination-controls")) {
-    const grid = document.getElementById("grid");
-    const paginationDiv = document.createElement("div");
-    paginationDiv.id = "pagination-controls";
-    paginationDiv.style = "display: flex; justify-content: center; align-items: center; gap: 1em; margin: 1em 0;";
-    grid.parentNode.insertBefore(paginationDiv, grid.nextSibling);
-}
+const displayModal = (slot, matches, currentPage) => {
+    // console.log("matches", matches);
+    const modal = document.getElementById("slot-trophy-modal");
+    const title = document.getElementById("slot-trophy-title");
+    const body = document.getElementById("slot-trophy-body");
+    title.innerText = `Found ${matches.length} matching ${matches.length === 1 ? "trophy" : "trophies"} for ${slot.name}`;
+    body.innerHTML = "";
+    if (matches.length === 0) {
+        body.innerHTML = "";
+    } else {
+        let totalPages = 1;
+        totalPages = Math.ceil(matches.length / PAGE_SIZE) || 1;
+        if (currentPage > totalPages) currentPage = totalPages;
+        const startIdx = (currentPage - 1) * PAGE_SIZE;
+        const endIdx = startIdx + PAGE_SIZE;
+        const pageSlots = matches.slice(startIdx, endIdx);
+
+        for (const trophy of pageSlots) {
+            const card = document.createElement("div");
+            card.style.setProperty("--color", colorLookup[trophy.type]);
+            card.className = "modal-card";
+
+            const imgColor = trophy.color ? trophy.color : "Black";
+            const imgType = trophy.type ? trophy.type : "Common";
+            const imgSrc = getTrophyImage(trophy.brand, trophy.model, imgColor, imgType);
+
+            const shortYear = trophy.year ? `'${String(trophy.year).slice(-2)}` : "";
+            card.innerHTML = `
+            <div style="position: relative; width: 100%; height: 100%;">
+            <img src="${imgSrc}" alt="${imgColor} ${imgType}" 
+            style="border-radius: 8px; position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1;">
+            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; z-index: 2; pointer-events: none;">
+            <div style="color: whitesmoke; text-align: center; margin-top: 0px; background: rgba(0,0,0,0.5); padding: 2px 4px; border-radius: 4px;">
+            <b>${shortYear} ${slot.name}</b><br>
+            </div>
+            </div>
+            </div>
+        `;
+            card.addEventListener("click", () => {
+                carDex.push(trophy);
+                console.log(carDex);
+                renderTrophySlots(carDex, mode, 1);
+                modal.style.display = "none";
+                body.innerHTML = "";
+                // do nothing for now
+                // implement viewing trophy details later
+            });
+            body.appendChild(card);
+        }
+
+        renderPaginationControls(MODAL_PAGINATION_CONTROLS, currentPage, totalPages, (newPage) => {
+            displayModal(slot, matches, newPage);
+        });
+    }
+    modal.style.display = "flex";
+
+    window.onclick = function (event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+            body.innerHTML = "";
+        }
+    };
+    window.onkeydown = function (event) {
+        if (event.key === "Escape") {
+            modal.style.display = "none";
+            body.innerHTML = "";
+        }
+    };
+};
 
 const normalizeTrophyData = (trophy) => {
-    trophy.brand = E_CarBrand[trophy.brand] || E_CarBrand["NewEnumerator0"];
-    trophy.model = E_CarModel[trophy.model] || E_CarModel["NewEnumerator0"];
-    trophy.color = E_VehiclePaintColor[trophy.paintColor] || E_VehiclePaintColor["NewEnumerator0"];
-    trophy.type = E_TrophyType[trophy.trophyType] || E_TrophyType["NewEnumerator0"];
-    trophy.year = parseInt(trophy.productionYear) || 0;
-    return trophy;
+    return {
+        brand: E_CarBrand[trophy.brand] || E_CarBrand["NewEnumerator0"],
+        model: E_CarModel[trophy.model] || E_CarModel["NewEnumerator0"],
+        color: E_VehiclePaintColor[trophy.paintColor] || E_VehiclePaintColor["NewEnumerator0"],
+        type: E_TrophyType[trophy.trophyType] || E_TrophyType["NewEnumerator0"],
+        year: parseInt(trophy.productionYear) || 0,
+    };
 };
 
 const parseTrophyString = (str) => {
@@ -181,40 +246,40 @@ const getAllTrophies = async () => {
     playerOwnedVehicles.forEach((v) => {
         getMatchingItemsInInventory(v.Vehicle, TROPHY_PRODUCT_ID).forEach((trophy) => items.push(trophy));
     });
+    // Garage Vehicles
+    const garageVehicles = SaveObject.AdditionalGameData.UndergroundGarageCarStorage.VehicleInfo;
+    garageVehicles.forEach((v) => {
+        getMatchingItemsInInventory(v.garageVehicleJsonData, TROPHY_PRODUCT_ID).forEach((trophy) => items.push(trophy));
+    });
     // Player Storage
     getMatchingItemsInInventory({ ItemContainer: SaveObject.PlayerStorage }, TROPHY_PRODUCT_ID).forEach((trophy) => items.push(trophy));
     // Trophy Shelf
     getMatchingItemsInInventory(SaveObject.AdditionalGameData.TrophyShelf, TROPHY_PRODUCT_ID).forEach((trophy) => items.push(trophy));
 
-    const garageVehicles = SaveObject.AdditionalGameData.UndergroundGarageCarStorage.VehicleInfo;
-
-    garageVehicles.forEach((v) => {
-        getMatchingItemsInInventory(v.garageVehicleJsonData, TROPHY_PRODUCT_ID).forEach((trophy) => items.push(trophy));
-    });
-
     for (const item_id in items) {
         trophyInventory.push(parseTrophyString(items[item_id].json.customData));
     }
+    console.info(`Found ${trophyInventory.length} trophies in save file.`);
 };
 
-const populateInventoryList = () => {
-    const list = document.getElementById("inventory-list");
-    list.innerHTML = "";
-    trophyInventory.forEach((trophy) => {
-        //console.log(trophy);
-        const div = document.createElement("div");
-        div.textContent = `${trophy.brand} ${trophy.model} - ${trophy.year || "N/A"} - ${trophy.color || "N/A"} - ${trophy.type || "N/A"}`;
-        list.appendChild(div);
-    });
-};
+// const populateInventoryList = () => {
+//     const list = document.getElementById("inventory-list");
+//     list.innerHTML = "";
+//     trophyInventory.forEach((trophy) => {
+//         //console.log(trophy);
+//         const div = document.createElement("div");
+//         div.textContent = `${trophy.brand} ${trophy.model} - ${trophy.year || "N/A"} - ${trophy.color || "N/A"} - ${trophy.type || "N/A"}`;
+//         list.appendChild(div);
+//     });
+// };
 
-const updateProgress = () => {
+const updateTrophyProgress = () => {
     const slots = generateAllTrophySlots(mode, carData);
     let owned = 0;
 
-    trophyInventory.forEach((trophy) => {
+    carDex.forEach((trophy) => {
         slots.forEach((slot) => {
-            if (matchTrophy(slot, trophy, mode, trophyInventory)) {
+            if (matchTrophy(slot, trophy, mode)) {
                 slot.owned = true;
                 slot.color = trophy.color;
                 slot.type = trophy.type;
@@ -226,7 +291,7 @@ const updateProgress = () => {
     owned = slots.filter((slot) => slot.owned).length;
     const total = slots.length;
 
-    updateProgressBar(owned, total, document.getElementById("percent"), document.getElementById("bar-fill"));
+    updateProgressBar(owned, total, PROGRESS_BAR_TEXT, PROGRESS_BAR);
 };
 
 // Load and read save file
@@ -248,46 +313,35 @@ const read_save = async (input) => {
     }
 
     const start = performance.now();
-    db.each(`SELECT * FROM table_additional_systems`, (row) => {
-        SaveObject[row.system_id] = walkObjectParseJson(row.json_content);
-    });
+    SaveObject = getSaveObject(db);
     db.close();
     const end = performance.now();
     console.info(`Database query and parsing took ${(end - start).toFixed(2)} ms`);
-
     console.info("Database loaded successfully.");
-
     console.info(SaveObject);
 
     await getAllTrophies();
-    renderTrophySlots(trophyInventory, mode, 1);
-    populateInventoryList();
-    updateProgress();
+    //renderTrophySlots(trophyInventory, mode, 1);
+    updateTrophyProgress();
 };
 
-// Site interactions
-
+// App interactions
 const tabs = document.querySelectorAll(".tab");
 tabs.forEach((tab) => {
+    if (!tab.getAttribute("data-mode")) return;
     tab.addEventListener("click", () => {
         tabs.forEach((t) => t.classList.remove("active"));
         tab.classList.add("active");
         mode = tab.getAttribute("data-mode");
-        renderTrophySlots(trophyInventory, mode, 1);
-        updateProgress();
+        renderTrophySlots(carDex, mode, 1);
+        updateTrophyProgress();
     });
 });
 
-document.getElementById("view-inventory-btn").onclick = function () {
-    document.getElementById("inventory-modal").style.display = "flex";
-};
-document.getElementById("close-inventory").onclick = function () {
-    document.getElementById("inventory-modal").style.display = "none";
-};
-
+document.getElementById("versionNumber").innerText = `v${VERSION} (Hotfix ${GAME_VERSION})`;
 MEDIA_INPUT.addEventListener("change", (event) => read_save(event.target));
 
-// Initial render with no trophies owned
-renderTrophySlots([], mode, 1);
-updateProgress();
+// Initial render
+renderTrophySlots(carDex, mode, 1);
+updateTrophyProgress();
 disableDrag(document.querySelectorAll("*"));
