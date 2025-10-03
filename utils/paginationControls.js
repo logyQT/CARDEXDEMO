@@ -33,6 +33,20 @@ const renderPaginationControls = (container, currentPage, totalPages, onPageChan
     container.appendChild(prevBtn);
     container.appendChild(pageInfo);
     container.appendChild(nextBtn);
-};
 
-export { renderPaginationControls };
+    container.setAttribute("data-current-page", currentPage);
+    container.setAttribute("data-total-pages", totalPages);
+};
+/**
+ * Gets the current pagination information from the container.
+ * @param {*} container // The pagination controls container element
+ * @returns {Object} - An object containing the current page and total pages.
+ */
+const getPaginationInfo = (container) => {
+    if (!container) return { currentPage: 1, totalPages: 1 };
+    const currentPage = parseInt(container.getAttribute("data-current-page")) || 1;
+    const totalPages = parseInt(container.getAttribute("data-total-pages")) || 1;
+    return { currentPage, totalPages };
+}
+
+export { renderPaginationControls, getPaginationInfo };

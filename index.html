@@ -1,53 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <title>CarDex — Demo</title>
-        <link href="./style.css" rel="stylesheet" />
-        <script src="libs/sqljs/sql-wasm.js"></script>
-        <script src="./script.js" defer type="module"></script>
-    </head>
-    <body>
-        <div class="container">
-            <div class="app">
-                <div class="sidebar">
-                    <div class="title">CARDEX</div>
-                    <div class="tabs">
-                        <div class="tab active" data-mode="model">MODEL</div>
-                        <div class="tab" data-mode="year">YEAR</div>
-                        <div class="tab" data-mode="color">COLOR</div>
-                        <div class="tab" data-mode="type">TROPHY TYPE</div>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>CarDex — Demo</title>
+    <link href="./style.css" rel="stylesheet" />
+    <script src="libs/sqljs/sql-wasm.js"></script>
+    <script src="./script.js" defer type="module"></script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="app">
+            <div class="sidebar">
+                <div class="tabs">
+                    <div class="category">CARDEX
+                        <div class="sub">
+                            <div class="tab active" data-mode="model">MODEL</div>
+                            <div class="tab" data-mode="year">YEAR</div>
+                            <div class="tab" data-mode="color">COLOR</div>
+                            <div class="tab" data-mode="type">TROPHY TYPE</div>
+                        </div>
                     </div>
-                    <hr style="border: none; height: 8px" />
-                    <div class="panel tabs">
-                        <div style="font-weight: 700; margin-bottom: 8px">Inventory</div>
-                        <button id="view-inventory-btn" class="tab" data-mode="inventory">View Inventory</button>
-                        <button id="add-random" class="tab" ignored="true">Add Random Trophy</button>
-                        <button id="slot-trophy" class="tab" ignored="true">Fill All Slots</button>
+
+                    <div class="category">ACTIONS
+                        <div class="sub">
+                            <div id="view-inventory-btn" class="tab" data-mode="inventory">INVENTORY</div>
+                            <div id="add-random-trophy-btn" class="tab" ignored="true">RANDOM TROPHY</div>
+                            <div id="slot-trophy" class="tab" ignored="true">AUTOFILL</div>
+                        </div>
                     </div>
-                    <hr style="border: none; height: 8px" />
-                    <div class="panel">
-                        <div style="font-weight: 700; margin-bottom: 8px">Save Management</div>
-                        <input type="file" id="mediaInput" accept=".hrs" />
-                        <label for="mediaInput" id="mediaInputLabel" class="tab" ignored="true">Load Save File</label>
-                        <button id="download-save" class="tab" ignored="true">Download as JSON</button>
-                        <button id="upload-save" class="tab" ignored="true">Upload JSON</button>
-                        <button id="reset-save" class="tab" ignored="true">Reset Save Data</button>
+
+                    <div class="category">IMPORT/EXPORT
+                        <div class="sub">
+                            <label for="mediaInput" id="mediaInputLabel" class="tab" ignored="true">LOAD .HRS FILE</label>
+                            <input type="file" id="mediaInput" accept=".hrs" class="hidden" />
+                            <div id="download-save-btn" class="tab" ignored="true">DOWNLOAD JSON</div>
+                            <label for="upload-save-btn" id="jsonUploadLabel" class="tab" ignored="true">LOAD JSON</label>
+                            <input type="file" id="upload-save-btn" accept=".json" class="hidden" />
+                            <div id="reset-save-btn" class="tab" ignored="true">RESET SAVE DATA</div>
+                        </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="main">
-                    <div class="top-bar">
-                        <div class="progress-wrapper">
-                            <div class="small" id="progress-text">CarDex Completion: <strong id="progress-text-value">0%</strong></div>
-                            <div class="bar">
-                                <i id="progress-bar"> </i>
-                            </div>
+            <div class="main">
+                <div class="top-bar">
+                    <div class="progress-wrapper">
+                        <div class="small" id="progress-text">CarDex Completion: <strong
+                                id="progress-text-value">0%</strong></div>
+                        <div class="bar">
+                            <i id="progress-bar"> </i>
                         </div>
-                        <div id="grid-pagination-controls" class="pagination-controls"></div>
                     </div>
-                    <!-- <div class="controls">
+                    <div id="grid-pagination-controls" class="pagination-controls"></div>
+                </div>
+                <!-- <div class="controls">
                         <input id="filter" placeholder="Filter model / year / color" />
                         <select id="sort">
                             <option value="model">Sort: Model</option>
@@ -57,22 +66,28 @@
                         <button class="primary" id="open-cardex">Open CarDex</button>
                     </div> -->
 
-                    <div class="grid" id="grid"></div>
-                </div>
+                <div class="grid" id="grid"></div>
             </div>
         </div>
-        <footer>
-            CarDex Demo <i id="versionNumber"></i> &middot; Developed by logy80 &middot; <a href="https://github.com/your-repo" class="muted" style="text-decoration: none">GitHub</a> &middot; Special thanks to .faulty. for providing mappings and game assets.
-            <p>This website is an independent project and is not affiliated with, endorsed by, or associated with the developers or publishers of Car Dealer Simulator.</p>
-        </footer>
-        <div id="slot-trophy-modal" class="modal">
-            <div id="slot-trophy-content" class="modal-content">
-                <div class="modal-header">
-                    <h2 id="slot-trophy-title">Slot Trophy</h2>
-                    <div id="modal-pagination-controls" class="pagination-controls"></div>
-                </div>
-                <div id="slot-trophy-body" class="modal-grid">No trophies yet.</div>
-            </div>
+    </div>
+    <footer class="footer">
+        <div>
+            CarDex Demo <i id="versionNumber"></i> &middot; Developed by logy80 &middot; <a
+                href="https://github.com/your-repo" class="muted" style="text-decoration: none">GitHub</a> &middot;
+            Special thanks to .faulty. for providing mappings and game assets.
         </div>
-    </body>
+        <p>This website is an independent project and is not affiliated with, endorsed by, or associated with the
+            developers or publishers of Car Dealer Simulator.</p>
+    </footer>
+    <div id="slot-trophy-modal" class="modal">
+        <div id="slot-trophy-content" class="modal-content">
+            <div class="modal-header">
+                <h2 id="slot-trophy-title">Slot Trophy</h2>
+                <div id="modal-pagination-controls" class="pagination-controls"></div>
+            </div>
+            <div id="slot-trophy-body" class="modal-grid">No trophies yet.</div>
+        </div>
+    </div>
+</body>
+
 </html>

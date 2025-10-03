@@ -7,7 +7,7 @@
  */
 const updateProgressBar = (owned, total, percentEl, barFillEl) => {
     const pct = total === 0 ? 0 : Math.round((owned / total) * 100);
-    percentEl.textContent = `${pct}% (${owned}/${total})         `;
+    percentEl.textContent = `${pct}% (${owned}/${total})`;
     barFillEl.style.width = pct + "%";
 };
 export { updateProgressBar };

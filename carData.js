@@ -21,4 +21,17 @@ const carData = [
     { name: "Zen Motors Journey", prodStart: 1998, prodEnd: 2006, brand: "Zen Motors", model: "Journey" },
 ];
 
+const modelToBrandMap = new Map();
+carData.forEach(car => {
+    modelToBrandMap.set(car.model, car.brand);
+});
+const modelToProdYearsMap = new Map();
+carData.forEach(car => {
+    modelToProdYearsMap.set(car.model, { prodStart: car.prodStart, prodEnd: car.prodEnd });
+});
+const allCarModels = carData.map(car => car.model);
+
 export { carData };
+export { allCarModels };
+export { modelToBrandMap };
+export { modelToProdYearsMap };
