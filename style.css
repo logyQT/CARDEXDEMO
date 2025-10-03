@@ -442,9 +442,9 @@ input.hidden {
       white-space: nowrap;
     } */
 
-    .sub div:hover {
-      /* background: #555; */
-    }
+    /* .sub div:hover {
+      background: #555;
+    } */
     .tabs {
     display: flex;
     flex-direction: column;
