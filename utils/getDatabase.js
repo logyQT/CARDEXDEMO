@@ -6,7 +6,7 @@
 
 const getDatabase = async (file) => {
     const SQL = await initSqlJs({
-        locateFile: (f) => `../libs/sqljs/${f}`,
+        locateFile: () => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.5.0/sql-wasm.wasm`,
     });
 
     const buffer = await file.arrayBuffer();
