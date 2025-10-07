@@ -6,12 +6,12 @@
  * @returns {Object} Internal save data object
  */
 
-const createInternalSaveData = (versionNumber, carDex, trophyInventory) =>{
+const createInternalSaveData = (versionNumber, carDex, trophyInventory) => {
     return {
         version: versionNumber,
         timestamp: Date.now(),
         carDex: carDex,
-        trophyInventory: trophyInventory
+        trophyInventory: trophyInventory,
     };
 };
 
@@ -29,7 +29,7 @@ const readInternalSaveData = (data) => {
         version,
         timestamp,
         carDex,
-        trophyInventory
+        trophyInventory,
     };
 };
 
@@ -39,12 +39,7 @@ const validateInternalSaveData = (data, ver) => {
     }
 
     const { version, timestamp, carDex, trophyInventory } = data;
-    if (
-        typeof version !== "string" ||
-        typeof timestamp !== "number" ||
-        typeof carDex !== "object" ||
-        !Array.isArray(trophyInventory)
-    ) {
+    if (typeof version !== "string" || typeof timestamp !== "number" || typeof carDex !== "object" || !Array.isArray(trophyInventory)) {
         return false;
     }
 

@@ -1,20 +1,20 @@
 const exportToJSON = (saveData) => {
-   if (!saveData) {
-       console.error("No save data found.");
-       return;
-   }
+    if (!saveData) {
+        console.error("No save data found.");
+        return;
+    }
 
-   saveData = JSON.stringify(saveData);
-   const blob = new Blob([saveData], { type: "application/json" });
-   const url = URL.createObjectURL(blob);
+    saveData = JSON.stringify(saveData);
+    const blob = new Blob([saveData], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
 
-   const a = document.createElement("a");
-   a.href = url;
-   a.download = "saveData.json";
-   document.body.appendChild(a);
-   a.click();
-   document.body.removeChild(a);
-   URL.revokeObjectURL(url);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "saveData.json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 };
 
 const importFromJSON = (file, callback) => {

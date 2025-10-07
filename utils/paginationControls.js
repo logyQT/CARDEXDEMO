@@ -47,6 +47,6 @@ const getPaginationInfo = (container) => {
     const currentPage = parseInt(container.getAttribute("data-current-page")) || 1;
     const totalPages = parseInt(container.getAttribute("data-total-pages")) || 1;
     return { currentPage, totalPages };
-}
+};
 
 export { renderPaginationControls, getPaginationInfo };
