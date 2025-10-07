@@ -22,8 +22,9 @@ import {
     exportToJSON,
     importFromJSON,
     updateTrophyProgress,
-    normalizeTrophyData,
     getAllTrophies,
+    resetPaginationControls,
+    updateOverallTrophyProgress,
 } from "./utils/index.js";
 
 import { MEDIA_INPUT, PROGRESS_BAR, PROGRESS_BAR_TEXT, PAGINATION_CONTROLS, MODAL_PAGINATION_CONTROLS } from "./utils/domRefs.js";
@@ -55,6 +56,15 @@ const colorLookup = {
 };
 
 const renderTrophySlots = (inventory, mode, currentPage) => {
+    if (mode === "inventory") {
+        updateOverallTrophyProgress(carDex, PROGRESS_BAR_TEXT, PROGRESS_BAR);
+    }
+    if (mode === "inventory" && inventory.length === 0) {
+        const container = document.getElementById("grid");
+        container.innerHTML = "<p style='color: white; text-align: center; grid-column: span 6;'>No trophies in inventory. Add some using the random trophy button or by loading a save file.</p>";
+        resetPaginationControls(PAGINATION_CONTROLS);
+        return;
+    }
     let totalPages = 1;
 
     //const start = performance.now();

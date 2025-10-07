@@ -3,23 +3,20 @@ import { carData } from "../carData.js";
 
 const updateTrophyProgress = (carDex, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR) => {
     const slots = generateAllTrophySlots(mode, carData);
-    let owned = 0;
-
-    carDex[mode].forEach((trophy) => {
-        slots.forEach((slot) => {
-            if (matchTrophy(slot, trophy, mode)) {
-                slot.owned = true;
-                slot.color = trophy.color;
-                slot.type = trophy.type;
-                slot.year = trophy.year;
-            }
-        });
-    });
-
-    owned = slots.filter((slot) => slot.owned).length;
-    const total = slots.length;
-
+    let owned = carDex[mode].length;
+    let total = slots.length;
     updateProgressBar(owned, total, PROGRESS_BAR_TEXT, PROGRESS_BAR);
 };
 
-export { updateTrophyProgress };
+const updateOverallTrophyProgress = (carDex, PROGRESS_BAR_TEXT, PROGRESS_BAR) => {
+    let owned = 0;
+    let total = 0;
+    for (const mode in carDex) {
+        const slots = generateAllTrophySlots(mode, carData);
+        owned += carDex[mode].length;
+        total += slots.length;
+    }
+    updateProgressBar(owned, total, PROGRESS_BAR_TEXT, PROGRESS_BAR);
+};
+
+export { updateTrophyProgress, updateOverallTrophyProgress };

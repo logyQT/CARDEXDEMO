@@ -49,4 +49,11 @@ const getPaginationInfo = (container) => {
     return { currentPage, totalPages };
 };
 
-export { renderPaginationControls, getPaginationInfo };
+const resetPaginationControls = (container) => {
+    if (!container) return;
+    container.innerHTML = "";
+    container.removeAttribute("data-current-page");
+    container.removeAttribute("data-total-pages");
+};
+
+export { renderPaginationControls, getPaginationInfo, resetPaginationControls };
