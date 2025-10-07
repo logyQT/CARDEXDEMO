@@ -261,7 +261,6 @@ const read_save = async (input) => {
     console.info(SaveObject);
 
     trophyInventory = getAllTrophies(SaveObject);
-
     //renderTrophySlots(trophyInventory, mode, 1);
     //updateTrophyProgress();
 };
