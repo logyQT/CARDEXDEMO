@@ -1,0 +1,29 @@
+import { getMatchingItemsInInventory, parseTrophyString } from "./index.js";
+import { TROPHY_PRODUCT_ID } from "./constants.js";
+
+const getAllTrophies = (SaveObject) => {
+    let trophyInventory = [];
+    let items = [];
+    // Player owned vehicles loaded in the world
+    let playerOwnedVehicles = SaveObject.VehicleSystem.VehicleInfo.filter((v) => v.playerOwned && "Vehicle" in v);
+    playerOwnedVehicles.forEach((v) => {
+        getMatchingItemsInInventory(v.Vehicle, TROPHY_PRODUCT_ID).forEach((trophy) => items.push(trophy));
+    });
+    // Garage Vehicles
+    const garageVehicles = SaveObject.AdditionalGameData.UndergroundGarageCarStorage.VehicleInfo;
+    garageVehicles.forEach((v) => {
+        getMatchingItemsInInventory(v.garageVehicleJsonData, TROPHY_PRODUCT_ID).forEach((trophy) => items.push(trophy));
+    });
+    // Player Storage
+    getMatchingItemsInInventory({ ItemContainer: SaveObject.PlayerStorage }, TROPHY_PRODUCT_ID).forEach((trophy) => items.push(trophy));
+    // Trophy Shelf
+    getMatchingItemsInInventory(SaveObject.AdditionalGameData.TrophyShelf, TROPHY_PRODUCT_ID).forEach((trophy) => items.push(trophy));
+
+    for (const item_id in items) {
+        trophyInventory.push(parseTrophyString(items[item_id].json.customData));
+    }
+    console.info(`Found ${trophyInventory.length} trophies in save file.`);
+    return trophyInventory;
+};
+
+export { getAllTrophies };

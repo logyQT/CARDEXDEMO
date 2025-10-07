@@ -17,3 +17,7 @@ export * from "./sortTrophies.js";
 export * from "./internalSaveDataHandler.js";
 export * from "./generateID.js";
 export * from "./jsonSaveHandler.js";
+export * from "./updateTrophyProgress.js";
+export * from "./normalizeTrophyData.js";
+export * from "./getAllTrophies.js";
+export * from "./parseTrophyString.js";

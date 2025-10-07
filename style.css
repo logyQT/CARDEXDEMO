@@ -4,7 +4,10 @@
     --muted: #94a3b8;
     --accent: #60a5fa;
     --card: #0b1220;
-    --card_size: calc((100vh - 150px) / 3 - 1rem);
+    --card_rows: 3;
+    --card_cols: 6;
+    /* --card_size: calc((100vh - 150px) / var(--card_rows) - 1rem); */
+    --card_size: 170px;
 }
 * {
     margin: 0;
@@ -31,6 +34,10 @@ body {
     overflow: hidden;
     flex: 1;
     min-height: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 .footer {
     padding: 0.5rem;
@@ -48,7 +55,7 @@ body {
     width: fit-content;
     margin: 0 auto;
     padding: 12px;
-    height: 100%;
+    height: fit-content;
 }
 .sidebar {
     width: fit-content;
@@ -62,12 +69,13 @@ body {
     flex: 1;
     background: rgba(255, 255, 255, 0.02);
     border-radius: 0.5rem;
-    padding: 0.5rem;
+    padding: 0.5rem 1rem;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
     width: fit-content;
     min-height: 0;
+    height: 100%;
 }
 .controls {
     display: flex;
@@ -78,50 +86,21 @@ body {
 .search {
     flex: 1;
 }
+
 .grid {
-    flex: 1;
     padding: 1rem;
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    grid-template-rows: repeat(3, 1fr);
     gap: 1rem;
     align-items: flex-start;
     min-height: 0;
     overflow: hidden;
-    width: calc(var(--card_size) * 6 + 1rem * 5 + 1rem);
-}
-
-/* Use flex to avoid large gaps when there are few items */
-/* .grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    align-items: flex-start;
-    padding: 0.5rem;
-    min-height: 0;
-    overflow: hidden;
     width: fit-content;
-} */
+    grid-template-columns: repeat(auto-fit, minmax(var(--card_size), var(--card_size)));
+    grid-template-rows: repeat(auto-fit, minmax(var(--card_size), var(--card_size)));
 
-/* Make grid items responsive to screen height */
-/* .grid > div {
-    aspect-ratio: 1 / 1;
-    height: calc((100vh - 150px) / 3 - 0.5rem); 
-    box-sizing: border-box;
-} */
-/* .grid::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    scroll-behavior: smooth;
+    min-width: calc(6 * var(--card_size) /* 6 columns */ + 5 * 1rem /* 5 gaps between them */ + 2 * 1rem /* padding-left + padding-right */);
+    min-height: calc(3 * var(--card_size) /* 3 rows */ + 2 * 1rem /* padding-top + padding-bottom */ + 2 * 1rem /* pagination controls */);
 }
-.grid::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 8px;
-    border: 2px solid rgba(255, 255, 255, 0.1);
-    box-sizing: border-box;
-} */
 .slot {
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
     padding: 12px;

@@ -1,4 +1,3 @@
-import { E_CarBrand, E_CarModel, E_VehiclePaintColor, E_TrophyType } from "./utils/mappings.js";
 import { carData } from "./carData.js";
 import {
     createInternalSaveData,
@@ -13,10 +12,8 @@ import {
     disableDrag,
     getTrophyImage,
     animateCards,
-    updateProgressBar,
     renderPaginationControls,
     generateAllTrophySlots,
-    getMatchingItemsInInventory,
     saveToLocalStorage,
     loadFromLocalStorage,
     validateInternalSaveData,
@@ -24,7 +21,14 @@ import {
     removeFromLocalStorage,
     exportToJSON,
     importFromJSON,
+    updateTrophyProgress,
+    normalizeTrophyData,
+    getAllTrophies,
 } from "./utils/index.js";
+
+import { MEDIA_INPUT, PROGRESS_BAR, PROGRESS_BAR_TEXT, PAGINATION_CONTROLS, MODAL_PAGINATION_CONTROLS } from "./utils/domRefs.js";
+
+import { GAME_VERSION, VERSION } from "./utils/constants.js";
 
 let db = null;
 let SaveObject = {};
@@ -36,15 +40,11 @@ let carDex = {
     type: [],
 };
 let mode = "model"; // Default mode
-const GAME_VERSION = "#81";
-const VERSION = "2.0.0";
-const TROPHY_PRODUCT_ID = "VehicleTrophy";
-const MEDIA_INPUT = document.getElementById("mediaInput");
-const PROGRESS_BAR = document.getElementById("progress-bar");
-const PROGRESS_BAR_TEXT = document.getElementById("progress-text-value");
-const PAGINATION_CONTROLS = document.getElementById("grid-pagination-controls");
-const MODAL_PAGINATION_CONTROLS = document.getElementById("modal-pagination-controls");
-const PAGE_SIZE = 18;
+
+const rootStyles = getComputedStyle(document.documentElement);
+const ROWS = parseInt(rootStyles.getPropertyValue("--card_rows").trim()) || 4;
+const COLUMNS = parseInt(rootStyles.getPropertyValue("--card_columns").trim()) || 6;
+const PAGE_SIZE = ROWS * COLUMNS;
 
 const colorLookup = {
     Common: "rgb(255, 255, 255)",
@@ -61,19 +61,13 @@ const renderTrophySlots = (inventory, mode, currentPage) => {
     const container = document.getElementById("grid");
     container.innerHTML = ""; // Clear previous
 
-    const slots = mode !== "inventory" ? generateAllTrophySlots(mode, carData) : generateAllInventorySlots(sortTrophies(trophyInventory, ["model", "type", "year", "color"]));
+    const slots = mode !== "inventory" ? generateAllTrophySlots(mode, carData) : generateAllInventorySlots(sortTrophies(inventory, ["type", "model", "year", "color"]));
     //   console.log(slots);
 
     mode !== "inventory"
         ? inventory.forEach((trophy) => {
               slots.forEach((slot) => {
                   if (matchTrophy(slot, trophy, mode)) {
-                      slot._color = slot.color;
-                      slot._type = slot.type;
-                      slot._year = slot.year;
-                      slot._brand = slot.brand;
-                      slot._model = slot.model;
-                      slot._name = slot.name;
                       slot.owned = true;
                       slot.color = trophy.color;
                       slot.type = trophy.type;
@@ -163,8 +157,7 @@ const renderTrophySlots = (inventory, mode, currentPage) => {
         renderTrophySlots(inventory, mode, newPage);
     });
 
-    updateTrophyProgress();
-
+    if (mode !== "inventory") updateTrophyProgress(carDex, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
     const NEW_TROPHY_ELEMENTS = document.querySelectorAll(".trophy-slot");
 
     animateCards(NEW_TROPHY_ELEMENTS);
@@ -242,102 +235,9 @@ const displayModal = (slot, matches, currentPage) => {
     };
 };
 
-const normalizeTrophyData = (trophy) => {
-    return {
-        brand: E_CarBrand[trophy.brand] || E_CarBrand["NewEnumerator0"],
-        model: E_CarModel[trophy.model] || E_CarModel["NewEnumerator0"],
-        color: E_VehiclePaintColor[trophy.paintColor] || E_VehiclePaintColor["NewEnumerator0"],
-        type: E_TrophyType[trophy.trophyType] || E_TrophyType["NewEnumerator0"],
-        year: parseInt(trophy.productionYear) || 0,
-    };
-};
-
-const parseTrophyString = (str) => {
-    const inside = str.match(/\((.*)\)/)?.[1];
-    if (!inside) {
-        console.warn("Invalid trophy string format:", str);
-        return;
-    }
-
-    const entries = inside.split(",");
-
-    const obj = {};
-    for (const entry of entries) {
-        const [rawKey, value] = entry.split("=");
-        if (!rawKey || !value) continue;
-
-        const cleanKey = rawKey.split("_")[0];
-
-        const key = cleanKey.charAt(0).toLowerCase() + cleanKey.slice(1);
-
-        obj[key] = value;
-    }
-
-    return normalizeTrophyData(obj);
-};
-
-const getAllTrophies = async () => {
-    // reset trophy inventory on refresh
-    // temporary fix for duplicate trophies showing up in inventory until this gets modularized properly
-    trophyInventory = [];
-    let items = [];
-    // Player owned vehicles loaded in the world
-    let playerOwnedVehicles = SaveObject.VehicleSystem.VehicleInfo.filter((v) => v.playerOwned && "Vehicle" in v);
-    playerOwnedVehicles.forEach((v) => {
-        getMatchingItemsInInventory(v.Vehicle, TROPHY_PRODUCT_ID).forEach((trophy) => items.push(trophy));
-    });
-    // Garage Vehicles
-    const garageVehicles = SaveObject.AdditionalGameData.UndergroundGarageCarStorage.VehicleInfo;
-    garageVehicles.forEach((v) => {
-        getMatchingItemsInInventory(v.garageVehicleJsonData, TROPHY_PRODUCT_ID).forEach((trophy) => items.push(trophy));
-    });
-    // Player Storage
-    getMatchingItemsInInventory({ ItemContainer: SaveObject.PlayerStorage }, TROPHY_PRODUCT_ID).forEach((trophy) => items.push(trophy));
-    // Trophy Shelf
-    getMatchingItemsInInventory(SaveObject.AdditionalGameData.TrophyShelf, TROPHY_PRODUCT_ID).forEach((trophy) => items.push(trophy));
-
-    for (const item_id in items) {
-        trophyInventory.push(parseTrophyString(items[item_id].json.customData));
-    }
-    console.info(`Found ${trophyInventory.length} trophies in save file.`);
-};
-
-// const populateInventoryList = () => {
-//     const list = document.getElementById("inventory-list");
-//     list.innerHTML = "";
-//     trophyInventory.forEach((trophy) => {
-//         //console.log(trophy);
-//         const div = document.createElement("div");
-//         div.textContent = `${trophy.brand} ${trophy.model} - ${trophy.year || "N/A"} - ${trophy.color || "N/A"} - ${trophy.type || "N/A"}`;
-//         list.appendChild(div);
-//     });
-// };
-
-const updateTrophyProgress = () => {
-    const slots = generateAllTrophySlots(mode, carData);
-    let owned = 0;
-
-    carDex[mode].forEach((trophy) => {
-        slots.forEach((slot) => {
-            if (matchTrophy(slot, trophy, mode)) {
-                slot.owned = true;
-                slot.color = trophy.color;
-                slot.type = trophy.type;
-                slot.year = trophy.year;
-            }
-        });
-    });
-
-    owned = slots.filter((slot) => slot.owned).length;
-    const total = slots.length;
-
-    updateProgressBar(owned, total, PROGRESS_BAR_TEXT, PROGRESS_BAR);
-};
-
 // Load and read save file
 
 const read_save = async (input) => {
-    trophyInventory = [];
     console.info("Reading save file...");
     if (!input.files || input.files.length === 0) {
         console.warn("No file selected");
@@ -360,9 +260,10 @@ const read_save = async (input) => {
     console.info("Database loaded successfully.");
     console.info(SaveObject);
 
-    await getAllTrophies();
+    trophyInventory = getAllTrophies(SaveObject);
+
     //renderTrophySlots(trophyInventory, mode, 1);
-    updateTrophyProgress();
+    //updateTrophyProgress();
 };
 
 // App interactions
@@ -373,15 +274,18 @@ tabs.forEach((tab) => {
         tabs.forEach((t) => t.classList.remove("active"));
         tab.classList.add("active");
         mode = tab.getAttribute("data-mode");
+        if (mode === "inventory") {
+            renderTrophySlots(trophyInventory, mode, 1);
+            return;
+        }
         renderTrophySlots(carDex[mode], mode, 1);
-        updateTrophyProgress();
+        updateTrophyProgress(carDex, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
     });
 });
 
 document.querySelector("#add-random-trophy-btn").addEventListener("click", () => {
-    for (let i = 0; i < 10000; i++) {
-        trophyInventory.push(generateRandomTrophy());
-    }
+    trophyInventory.push(generateRandomTrophy());
+
     if (mode === "inventory") {
         const totalPages = Math.ceil(trophyInventory.length / PAGE_SIZE) || 1;
         renderTrophySlots(trophyInventory, mode, totalPages);
@@ -406,7 +310,7 @@ document.getElementById("reset-save-btn").addEventListener("click", () => {
     carDex = { model: [], year: [], color: [], type: [] };
     mode = "model";
     renderTrophySlots(carDex[mode], mode, 1);
-    updateTrophyProgress();
+    updateTrophyProgress(carDex, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
     console.info("Save data reset.");
 });
 
@@ -422,9 +326,9 @@ if (validateInternalSaveData(savedData, VERSION)) {
     trophyInventory = savedData.trophyInventory;
     console.info("Loaded saved data from localStorage.");
 } else {
-    console.warn("No valid saved data found in localStorage, starting fresh.");
+    console.warn("No valid saved data found in localStorage.");
 }
 
 renderTrophySlots(carDex[mode], mode, 1);
-updateTrophyProgress();
+updateTrophyProgress(carDex, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
 disableDrag(document.querySelectorAll("*"));

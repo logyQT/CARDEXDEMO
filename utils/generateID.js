@@ -9,6 +9,9 @@ const generateID = (mode, trophy) => {
         return `color-${trophy.brand}-${trophy.model}-${trophy.color}`.replace(/\s+/g, "").toLowerCase();
     } else if (mode === "type" && trophy.type && trophy.model && trophy.brand) {
         return `type-${trophy.brand}-${trophy.model}-${trophy.type}`.replace(/\s+/g, "").toLowerCase();
+    } else if (mode === "inventory") {
+        console.error("Inventory mode does not support generateID");
+        return null;
     }
     console.warn("Invalid mode or missing trophy properties");
     return null;
