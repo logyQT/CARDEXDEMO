@@ -1,4 +1,4 @@
-# CDS CarDex Demo
+# [CDS CarDex Demo](https://logyqt.github.io/CARDEXDEMO/)
 
 This is a small demo project showcasing a single game feature. It’s a quick example designed to share one idea and spark inspiration.
 
