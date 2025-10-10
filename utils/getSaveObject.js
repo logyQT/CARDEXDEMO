@@ -1,13 +1,12 @@
+import { walkObjectParseJson } from "./index.js";
+
 /**
  * @param {*} db // SQLite Database Object
  * @description Reads all rows from table_additional_systems and parses the json_content field into a JavaScript object.
  * The resulting object is structured with system_id as keys and parsed JSON content as values.
  * IMPORTANT: Remember to close the database connection after using this function to prevent memory leaks.
- * @returns {Object} - The structured object containing parsed JSON content.
+ * @returns {import("./types.js").SaveObjectRoot} - The structured object containing parsed JSON content.
  */
-
-import { walkObjectParseJson } from "./index.js";
-
 const getSaveObject = (db) => {
     let SaveObject = {};
     db.each(`SELECT * FROM table_additional_systems`, (row) => {

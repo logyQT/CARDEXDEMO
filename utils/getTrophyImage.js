@@ -4,7 +4,7 @@
  * @param {*} model - The model of the car.
  * @param {*} color - The color of the trophy.
  * @param {*} type - The type of the trophy.
- * @returns The file path for the trophy image.
+ * @returns {string} The file path for the trophy image.
  */
 
 const getTrophyImage = (brand, model, color, type) => {

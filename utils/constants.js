@@ -1,4 +1,5 @@
-const GAME_VERSION = "#81";
-const VERSION = "2.0.0";
+const GAME_VERSION = "#87";
+const VERSION = "2.0.1";
 const TROPHY_PRODUCT_ID = "VehicleTrophy";
-export { GAME_VERSION, VERSION, TROPHY_PRODUCT_ID };
+const PAGE_SIZE = 18;
+export { GAME_VERSION, VERSION, TROPHY_PRODUCT_ID, PAGE_SIZE };

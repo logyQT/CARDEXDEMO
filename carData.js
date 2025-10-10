@@ -16,7 +16,7 @@ const carData = [
     { name: "Phantom Cortega", prodStart: 1975, prodEnd: 1979, brand: "Phantom", model: "Cortega" },
     { name: "Phantom Gale", prodStart: 1980, prodEnd: 1990, brand: "Phantom", model: "Gale" },
     { name: "Phantom Thunder", prodStart: 1995, prodEnd: 2000, brand: "Phantom", model: "Thunder" },
-    // { name: "Phantom ThunderX", prodStart: 2000, prodEnd: 2010, brand: "Phantom", model: "ThunderX" },
+    { name: "Phantom ThunderX", prodStart: 2000, prodEnd: 2010, brand: "Phantom", model: "ThunderX" },
     { name: "Phantom Voyager", prodStart: 1982, prodEnd: 1991, brand: "Phantom", model: "Voyager" },
     { name: "UMX 600C", prodStart: 1980, prodEnd: 1989, brand: "UMX", model: "600C" },
     { name: "Zen Motors Journey", prodStart: 1998, prodEnd: 2006, brand: "Zen Motors", model: "Journey" },
@@ -32,7 +32,4 @@ carData.forEach((car) => {
 });
 const allCarModels = carData.map((car) => car.model);
 
-export { carData };
-export { allCarModels };
-export { modelToBrandMap };
-export { modelToProdYearsMap };
+export { carData, modelToBrandMap, modelToProdYearsMap, allCarModels };

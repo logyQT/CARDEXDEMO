@@ -1,6 +1,11 @@
 import { getMatchingItemsInInventory, parseTrophyString } from "./index.js";
 import { TROPHY_PRODUCT_ID } from "./constants.js";
 
+/**
+ *
+ * @param {import("./types.js").SaveObjectRoot} SaveObject
+ * @returns
+ */
 const getAllTrophies = (SaveObject) => {
     let trophyInventory = [];
     let items = [];
@@ -14,6 +19,8 @@ const getAllTrophies = (SaveObject) => {
     garageVehicles.forEach((v) => {
         getMatchingItemsInInventory(v.garageVehicleJsonData, TROPHY_PRODUCT_ID).forEach((trophy) => items.push(trophy));
     });
+    // Player Inventory
+    getMatchingItemsInInventory({ ItemContainer: SaveObject.Inventory }, TROPHY_PRODUCT_ID).forEach((trophy) => items.push(trophy));
     // Player Storage
     getMatchingItemsInInventory({ ItemContainer: SaveObject.PlayerStorage }, TROPHY_PRODUCT_ID).forEach((trophy) => items.push(trophy));
     // Trophy Shelf

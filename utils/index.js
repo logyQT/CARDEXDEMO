@@ -21,3 +21,6 @@ export * from "./updateTrophyProgress.js";
 export * from "./normalizeTrophyData.js";
 export * from "./getAllTrophies.js";
 export * from "./parseTrophyString.js";
+export * from "./autoFillTrophySlots.js";
+export * from "./matchBestTrophy.js";
+export * from "./filterTrophies.js";

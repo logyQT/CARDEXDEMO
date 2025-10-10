@@ -113,6 +113,46 @@ body {
     justify-content: center;
     position: relative;
 }
+.trophy-slot-inner-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.trophy-slot-img {
+    border-radius: 8px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    z-index: 1;
+}
+
+.trophy-slot-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.trophy-slot-text {
+    color: whitesmoke;
+    text-align: center;
+    margin-top: 0px;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+
 .label {
     font-weight: 700;
 }

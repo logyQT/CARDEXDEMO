@@ -1,4 +1,3 @@
-import { carData } from "./carData.js";
 import {
     createInternalSaveData,
     getPaginationInfo,
@@ -25,13 +24,16 @@ import {
     getAllTrophies,
     resetPaginationControls,
     updateOverallTrophyProgress,
+    autoFillTrophySlots,
 } from "./utils/index.js";
 
-import { MEDIA_INPUT, PROGRESS_BAR, PROGRESS_BAR_TEXT, PAGINATION_CONTROLS, MODAL_PAGINATION_CONTROLS } from "./utils/domRefs.js";
+import { MEDIA_INPUT, PROGRESS_BAR, PROGRESS_BAR_TEXT, PAGINATION_CONTROLS, MODAL_PAGINATION_CONTROLS, VERSION_TEXT, RESET_BUTTON, IMPORT_JSON_BUTTON, DOWNLOAD_JSON_BUTTON, TROPHY_AUTOFILL_BUTTON, ADD_TROPHY_BUTTON } from "./utils/domRefs.js";
 
-import { GAME_VERSION, VERSION } from "./utils/constants.js";
+import { GAME_VERSION, VERSION, PAGE_SIZE } from "./utils/constants.js";
 
-let db = null;
+/**
+ * @type {import("./utils/types.js").SaveObjectRoot}
+ */
 let SaveObject = {};
 let trophyInventory = [];
 let carDex = {
@@ -41,11 +43,6 @@ let carDex = {
     type: [],
 };
 let mode = "model"; // Default mode
-
-const rootStyles = getComputedStyle(document.documentElement);
-const ROWS = parseInt(rootStyles.getPropertyValue("--card_rows").trim()) || 4;
-const COLUMNS = parseInt(rootStyles.getPropertyValue("--card_columns").trim()) || 6;
-const PAGE_SIZE = ROWS * COLUMNS;
 
 const colorLookup = {
     Common: "rgb(255, 255, 255)",
@@ -59,7 +56,7 @@ const renderTrophySlots = (inventory, mode, currentPage) => {
     if (mode === "inventory") {
         updateOverallTrophyProgress(carDex, PROGRESS_BAR_TEXT, PROGRESS_BAR);
     }
-    if (mode === "inventory" && inventory.length === 0) {
+    if (mode === "inventory" && inventory?.length === 0) {
         const container = document.getElementById("grid");
         container.innerHTML = "<p style='color: white; text-align: center; grid-column: span 6;'>No trophies in inventory. Add some using the random trophy button or by loading a save file.</p>";
         resetPaginationControls(PAGINATION_CONTROLS);
@@ -67,12 +64,10 @@ const renderTrophySlots = (inventory, mode, currentPage) => {
     }
     let totalPages = 1;
 
-    //const start = performance.now();
     const container = document.getElementById("grid");
-    container.innerHTML = ""; // Clear previous
+    container.innerHTML = "";
 
-    const slots = mode !== "inventory" ? generateAllTrophySlots(mode, carData) : generateAllInventorySlots(sortTrophies(inventory, ["type", "model", "year", "color"]));
-    //   console.log(slots);
+    const slots = mode !== "inventory" ? generateAllTrophySlots(mode) : generateAllInventorySlots(sortTrophies(inventory, ["type", "model", "year", "color"]));
 
     mode !== "inventory"
         ? inventory.forEach((trophy) => {
@@ -90,8 +85,6 @@ const renderTrophySlots = (inventory, mode, currentPage) => {
           })
         : null;
 
-    // Pagination logic
-
     totalPages = Math.ceil(slots.length / PAGE_SIZE) || 1;
     if (currentPage > totalPages) currentPage = totalPages;
     const startIdx = (currentPage - 1) * PAGE_SIZE;
@@ -100,9 +93,7 @@ const renderTrophySlots = (inventory, mode, currentPage) => {
 
     pageSlots.forEach((slot) => {
         slot.mode = mode;
-        // add reference to original slot data for modal use
         slot._slot = slot;
-        // console.log(slot);
         const card = document.createElement("div");
         card.className = slot.owned ? "trophy-slot owned-true" : "trophy-slot owned-false";
         if (slot.owned) card.style.setProperty("--color", colorLookup[slot.type]);
@@ -121,15 +112,13 @@ const renderTrophySlots = (inventory, mode, currentPage) => {
 
         const shortYear = slot.year ? `'${String(slot.year).slice(-2)}` : "";
         card.innerHTML = `
-            <div style="position: relative; width: 100%; height: 100%;">
-            <img src="${imgSrc}" alt="${imgColor} ${imgType}" 
-            class="${slot.owned ? "" : "locked"}"
-            style="border-radius: 8px; position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1;">
-            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; z-index: 2; pointer-events: none;">
-            <div style="color: whitesmoke; text-align: center; margin-top: 0px; background: rgba(0,0,0,0.5); padding: 2px 4px; border-radius: 4px;">
-            <b>${shortYear} ${slot.name}</b><br>
-            </div>
-            </div>
+            <div class="trophy-slot-inner-wrapper">
+                <img src="${imgSrc}" alt="${imgColor} ${imgType}" class="trophy-slot-img">
+                <div class="trophy-slot-overlay">
+                    <div class="trophy-slot-text">
+                        <b>${shortYear} ${slot.name}</b><br>
+                    </div>
+                </div>
             </div>
         `;
 
@@ -177,7 +166,6 @@ const renderTrophySlots = (inventory, mode, currentPage) => {
 };
 
 const displayModal = (slot, matches, currentPage) => {
-    // console.log("matches", matches);
     const MODAL_EL = document.getElementById("slot-trophy-modal");
     const MODAL_TITLE_EL = document.getElementById("slot-trophy-title");
     const MODAL_BODY = document.getElementById("slot-trophy-body");
@@ -204,14 +192,13 @@ const displayModal = (slot, matches, currentPage) => {
 
             const shortYear = trophy.year ? `'${String(trophy.year).slice(-2)}` : "";
             card.innerHTML = `
-            <div style="position: relative; width: 100%; height: 100%;">
-            <img src="${imgSrc}" alt="${imgColor} ${imgType}" 
-            style="border-radius: 8px; position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1;">
-            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; z-index: 2; pointer-events: none;">
-            <div style="color: whitesmoke; text-align: center; margin-top: 0px; background: rgba(0,0,0,0.5); padding: 2px 4px; border-radius: 4px;">
-            <b>${shortYear} ${slot.name}</b><br>
-            </div>
-            </div>
+            <div class="trophy-slot-inner-wrapper">
+                <img src="${imgSrc}" alt="${imgColor} ${imgType}" class="trophy-slot-img">
+                <div class="trophy-slot-overlay">
+                    <div class="trophy-slot-text">
+                        <b>${shortYear} ${slot.name}</b><br>
+                    </div>
+                </div>
             </div>
         `;
             card.addEventListener("click", () => {
@@ -256,7 +243,7 @@ const read_save = async (input) => {
 
     const file = input.files[0];
 
-    db = await getDatabase(file);
+    const db = await getDatabase(file);
     if (!db) {
         alert("Failed to open the database. Please ensure a valid save file is selected.");
         return;
@@ -271,8 +258,7 @@ const read_save = async (input) => {
     console.info(SaveObject);
 
     trophyInventory = getAllTrophies(SaveObject);
-    //renderTrophySlots(trophyInventory, mode, 1);
-    //updateTrophyProgress();
+    renderTrophySlots(trophyInventory, "inventory", 1);
 };
 
 // App interactions
@@ -292,28 +278,48 @@ tabs.forEach((tab) => {
     });
 });
 
-document.querySelector("#add-random-trophy-btn").addEventListener("click", () => {
+ADD_TROPHY_BUTTON.addEventListener("click", () => {
     trophyInventory.push(generateRandomTrophy());
 
     if (mode === "inventory") {
         const totalPages = Math.ceil(trophyInventory.length / PAGE_SIZE) || 1;
         renderTrophySlots(trophyInventory, mode, totalPages);
     }
+    const internalSaveData = createInternalSaveData(VERSION, carDex, trophyInventory);
+    saveToLocalStorage("internalSaveData", internalSaveData);
 });
 
-document.getElementById("download-save-btn").addEventListener("click", () => {
+TROPHY_AUTOFILL_BUTTON.addEventListener("click", () => {
+    if (trophyInventory.length === 0) {
+        alert("No trophies in inventory to fill the CarDex with.");
+        return;
+    }
+    mode = mode === "inventory" ? "model" : mode;
+    carDex = autoFillTrophySlots(carDex, trophyInventory);
+    const _CurrentPage = getPaginationInfo(PAGINATION_CONTROLS).currentPage;
+    renderTrophySlots(carDex[mode], mode, _CurrentPage);
+});
+
+DOWNLOAD_JSON_BUTTON.addEventListener("click", () => {
     const internalSaveData = createInternalSaveData(VERSION, carDex, trophyInventory);
     exportToJSON(internalSaveData);
 });
-document.getElementById("upload-save-btn").addEventListener("change", (event) => {
+
+IMPORT_JSON_BUTTON.addEventListener("change", (event) => {
     const file = event.target.files[0];
     if (file) {
         importFromJSON(file, (data) => {
-            console.log("Imported data:", data);
+            console.info("Imported data:", data);
+            carDex = data.carDex;
+            trophyInventory = data.trophyInventory;
+            const _CurrentPage = getPaginationInfo(PAGINATION_CONTROLS).currentPage;
+            renderTrophySlots(carDex[mode], mode, _CurrentPage);
+            updateTrophyProgress(carDex, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
         });
     }
 });
-document.getElementById("reset-save-btn").addEventListener("click", () => {
+
+RESET_BUTTON.addEventListener("click", () => {
     removeFromLocalStorage("internalSaveData");
     trophyInventory = [];
     carDex = { model: [], year: [], color: [], type: [] };
@@ -323,14 +329,12 @@ document.getElementById("reset-save-btn").addEventListener("click", () => {
     console.info("Save data reset.");
 });
 
-document.getElementById("versionNumber").innerText = `v${VERSION} (Hotfix ${GAME_VERSION})`;
+VERSION_TEXT.innerText = `v${VERSION} (Hotfix ${GAME_VERSION})`;
 MEDIA_INPUT.addEventListener("change", (event) => read_save(event.target));
-
-// Initial render
-
 const savedData = loadFromLocalStorage("internalSaveData");
+
 if (validateInternalSaveData(savedData, VERSION)) {
-    console.log(savedData);
+    console.info(savedData);
     carDex = savedData.carDex;
     trophyInventory = savedData.trophyInventory;
     console.info("Loaded saved data from localStorage.");

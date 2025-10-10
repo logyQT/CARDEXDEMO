@@ -10,7 +10,6 @@ import { matchTrophy } from "./index.js";
 
 const getMatchingTrophies = (slot, mode, trophyInventory) => {
     return trophyInventory.filter((trophy) => {
-        // console.log("Matching trophy:", trophy, "with slot:", slot, "in mode:", mode);
         return matchTrophy(slot, trophy, mode, trophyInventory);
     });
 };

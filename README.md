@@ -38,3 +38,12 @@ Please note that this demo is not highly flexible or responsive. The app may dis
 Big thanks to **.faulty.** for sharing mapping data and game assets.
 
 Also, shoutout to **duckobread**, the community manager, for giving the green light to release this project on GitHub.
+
+## Changelog
+
+### 2.0.1
+
+-   Added the **Phantom ThunderX** trophy.
+-   Fixed issues with importing JSON files.
+-   Improved trophy retrieval from save files by also checking the player inventory.
+-   Added a new **Autofill** button to quickly fill all trophy slots automatically.
