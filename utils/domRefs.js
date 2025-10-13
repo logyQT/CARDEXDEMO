@@ -1,13 +1,41 @@
-const MEDIA_INPUT = document.getElementById("mediaInput");
+const IMPORT_SAVE_FILE_BUTTON = document.getElementById("import-save-file-input");
 const PROGRESS_BAR = document.getElementById("progress-bar");
 const PROGRESS_BAR_TEXT = document.getElementById("progress-text-value");
 const PAGINATION_CONTROLS = document.getElementById("grid-pagination-controls");
 const MODAL_PAGINATION_CONTROLS = document.getElementById("modal-pagination-controls");
-const VERSION_TEXT = document.getElementById("versionNumber");
+const VERSION_TEXT = document.getElementById("version-number");
 const RESET_BUTTON = document.getElementById("reset-save-btn");
 const IMPORT_JSON_BUTTON = document.getElementById("upload-save-btn");
 const DOWNLOAD_JSON_BUTTON = document.getElementById("download-save-btn");
 const TROPHY_AUTOFILL_BUTTON = document.getElementById("auto-fill-btn");
 const ADD_TROPHY_BUTTON = document.getElementById("add-random-trophy-btn");
+const SEARCH_BAR = document.getElementById("search-bar");
+const TROPHY_GRID = document.getElementById("trophy-grid");
+const MODAL_GRID = document.getElementById("modal-grid");
+const SHARE_BUTTON = document.getElementById("share-btn");
+const COPY_SHARE_LINK_BUTTON = document.getElementById("copy-share-link-btn");
+const CLOSE_SHARE_LINK_BUTTON = document.getElementById("close-share-link-btn");
+const SHARE_LINK_CONTAINER = document.getElementById("share-link-container");
+const SHARE_LINK_INPUT = document.getElementById("share-link-input");
 
-export { ADD_TROPHY_BUTTON, TROPHY_AUTOFILL_BUTTON, DOWNLOAD_JSON_BUTTON, IMPORT_JSON_BUTTON, RESET_BUTTON, MEDIA_INPUT, PROGRESS_BAR, PROGRESS_BAR_TEXT, PAGINATION_CONTROLS, MODAL_PAGINATION_CONTROLS, VERSION_TEXT };
+export {
+    COPY_SHARE_LINK_BUTTON,
+    CLOSE_SHARE_LINK_BUTTON,
+    SHARE_LINK_CONTAINER,
+    SHARE_LINK_INPUT,
+    SHARE_BUTTON,
+    TROPHY_GRID,
+    ADD_TROPHY_BUTTON,
+    TROPHY_AUTOFILL_BUTTON,
+    DOWNLOAD_JSON_BUTTON,
+    IMPORT_JSON_BUTTON,
+    RESET_BUTTON,
+    IMPORT_SAVE_FILE_BUTTON,
+    PROGRESS_BAR,
+    PROGRESS_BAR_TEXT,
+    PAGINATION_CONTROLS,
+    MODAL_PAGINATION_CONTROLS,
+    VERSION_TEXT,
+    SEARCH_BAR,
+    MODAL_GRID,
+};

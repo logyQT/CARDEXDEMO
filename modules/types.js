@@ -9,7 +9,25 @@
  * @property {Object} SideEventsManager
  * @property {Object} UpgradeSystem
  * @property {VehicleSystem} VehicleSystem
+ * @property {Object.<string, RunTimeObject>} RuntimeObjects
  * @description Main save object parsed from the database.
+ */
+
+/**
+ * @typedef {Object} RunTimeObject
+ * @property {string} ActorClass
+ * @property {boolean} InHand
+ * @property {RunTimeObject.SaveInfo} SaveInfo
+ * @property {boolean} bCanBeDamaged
+ * @property {string} customData
+ * @property {boolean} isInSaveSystem
+ */
+
+/**
+ * @typedef {Object} RunTimeObject.SaveInfo
+ * @property {string} carId
+ * @property {boolean} possessed
+ * @property {transform} transform
  */
 
 /**
@@ -747,6 +765,20 @@
  * @typedef {Object} damageCarParts
  * @property {number} x
  * @property {number} y
+ */
+
+/**
+ * @typedef {Object} TrophySlot
+ * @property {'Apex Motors Striker' | 'Apex Motors Vanguard' | 'Ardena Ignis' | 'Cargo Wise P2' | 'Cargo Wise P3' |
+ * 'Cargo Wise P4' | 'Cavallaro 280G' | 'Harmonia Vehicles Allegretto' | 'Harmonia Vehicles Andante' | 'Harmonia Vehicles Largo' |
+ * 'NGD Pulse' | 'Off Rider Boulder' | 'Off Rider Canyon' | 'Off Rider Ridge' | 'Phantom Cortega' | 'Phantom Gale' | 'Phantom Thunder' |
+ * 'Phantom ThunderX' | 'Phantom Voyager' | 'UMX 600C' | 'Zen Motors Journey'} name - The name of the trophy slot.
+ * @property {number} year - The production year.
+ * @property {'Apex Motors' | 'Ardena' | 'Cargo Wise' | 'Cavallaro' | 'Harmonia Vehicles' |
+ * 'NGD' | 'Off Rider' | 'Phantom' | 'UMX' | 'Zen Motors'} brand - The brand of the car.
+ * @property {'Striker' | 'Vanguard' | 'Ignis' | 'P2' | 'P3' | 'P4' | '280G' | 'Allegretto' | 'Andante' | 'Largo' | 'Pulse' |
+ * 'Boulder' | 'Canyon' | 'Ridge' | 'Cortega' | 'Gale' | 'Thunder' | 'ThunderX' | 'Voyager' | '600C' | 'Journey'} model - The model of the car.
+ * @property {'common' | 'rust' | 'silver' | 'gold' | 'diamond'} type - Trophy type
  */
 
 export {};

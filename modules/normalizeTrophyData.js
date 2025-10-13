@@ -8,9 +8,11 @@ const normalizeTrophyData = (trophy) => {
     return {
         brand: E_CarBrand[trophy.brand] || E_CarBrand["NewEnumerator0"],
         model: E_CarModel[trophy.model] || E_CarModel["NewEnumerator0"],
+        name: `${E_CarBrand[trophy.brand] || E_CarBrand["NewEnumerator0"]} ${E_CarModel[trophy.model] || E_CarModel["NewEnumerator0"]}`,
         color: E_VehiclePaintColor[trophy.paintColor] || E_VehiclePaintColor["NewEnumerator0"],
         type: E_TrophyType[trophy.trophyType] || E_TrophyType["NewEnumerator0"],
         year: parseInt(trophy.productionYear) || 0,
+        owned: true,
     };
 };
 export { normalizeTrophyData };

@@ -7,6 +7,7 @@
         <link href="./style.css" rel="stylesheet" />
         <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
         <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.5.0/sql-wasm.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
         <script src="./script.js" defer type="module"></script>
     </head>
 
@@ -14,6 +15,16 @@
         <div class="container">
             <div class="app">
                 <div class="sidebar">
+                    <div class="controls">
+                        <input class="search-bar" id="search-bar" placeholder="ex. Striker gold >1990" type="search" />
+                        <div class="sorting-options">
+                            <div class="sort-state-button" data-sort="brand" data-state="0">B</div>
+                            <div class="sort-state-button" data-sort="model" data-state="0">M</div>
+                            <div class="sort-state-button" data-sort="year" data-state="0">Y</div>
+                            <div class="sort-state-button" data-sort="color" data-state="0">C</div>
+                            <div class="sort-state-button" data-sort="type" data-state="0">T</div>
+                        </div>
+                    </div>
                     <div class="tabs">
                         <div class="category">
                             CARDEX
@@ -37,8 +48,9 @@
                         <div class="category">
                             IMPORT/EXPORT
                             <div class="sub">
-                                <label for="mediaInput" id="mediaInputLabel" class="tab">LOAD .HRS FILE</label>
-                                <input type="file" id="mediaInput" accept=".hrs" class="hidden" />
+                                <label for="import-save-file-input" id="mediaInputLabel" class="tab">LOAD .HRS FILE</label>
+                                <input type="file" id="import-save-file-input" accept=".hrs" class="hidden" />
+                                <div id="share-btn" class="tab">SHARE</div>
                                 <div id="download-save-btn" class="tab">DOWNLOAD JSON</div>
                                 <label for="upload-save-btn" id="jsonUploadLabel" class="tab">LOAD JSON</label>
                                 <input type="file" id="upload-save-btn" accept=".json" class="hidden" />
@@ -58,32 +70,31 @@
                         </div>
                         <div id="grid-pagination-controls" class="pagination-controls"></div>
                     </div>
-                    <!-- <div class="controls">
-                        <input id="filter" placeholder="Filter model / year / color" />
-                        <select id="sort">
-                            <option value="model">Sort: Model</option>
-                            <option value="year">Sort: Year</option>
-                            <option value="color">Sort: Color</option>
-                        </select>
-                        <button class="primary" id="open-cardex">Open CarDex</button>
-                    </div> -->
 
-                    <div class="grid" id="grid"></div>
+                    <div class="grid" id="trophy-grid"></div>
                 </div>
             </div>
         </div>
         <footer class="footer">
-            <div>CarDex Demo <i id="versionNumber"></i> &middot; Developed by logy80 &middot; <a href="https://github.com/logyQT/CARDEXDEMO" class="muted" style="text-decoration: none">GitHub</a> &middot; Big thanks to <strong>.faulty.</strong> for sharing mapping data and game assets.</div>
+            <div>CarDex Demo <i id="version-number"></i> &middot; Developed by logy80 &middot; <a href="https://github.com/logyQT/CARDEXDEMO" class="muted" style="text-decoration: none">GitHub</a> &middot; Big thanks to <strong>.faulty.</strong> for sharing mapping data and game assets.</div>
             <p>This project is not affiliated with, endorsed by, or associated with the developers or publishers of Car Dealer Simulator.</p>
             <p>All trademarks and copyrights remain the property of their respective owners.</p>
         </footer>
+        <div id="share-link-container" class="hidden">
+            <div id="share-link-box">
+                <span id="share-link-text">Shareable Link:</span>
+                <input type="text" id="share-link-input" readonly />
+                <button id="copy-share-link-btn">Copy</button>
+                <button id="close-share-link-btn">Close</button>
+            </div>
+        </div>
         <div id="slot-trophy-modal" class="modal">
             <div id="slot-trophy-content" class="modal-content">
                 <div class="modal-header">
                     <h2 id="slot-trophy-title">Slot Trophy</h2>
                     <div id="modal-pagination-controls" class="pagination-controls"></div>
                 </div>
-                <div id="slot-trophy-body" class="modal-grid">No trophies yet.</div>
+                <div id="modal-grid" class="modal-grid">No trophies yet.</div>
             </div>
         </div>
     </body>

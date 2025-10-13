@@ -11,11 +11,16 @@ const getDatabase = async (file) => {
 
     const buffer = await file.arrayBuffer();
 
-    const db = await new SQL.Database(new Uint8Array(buffer));
-    if (!db) {
-        console.error("Failed to open the database.");
+    try {
+        const db = await new SQL.Database(new Uint8Array(buffer));
+        if (!db) {
+            console.error("Failed to open the database.");
+            return null;
+        }
+        return db;
+    } catch (error) {
+        console.error("Error opening database:", error);
         return null;
     }
-    return db;
 };
 export { getDatabase };

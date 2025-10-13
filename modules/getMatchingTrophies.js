@@ -8,9 +8,9 @@
 
 import { matchTrophy } from "./index.js";
 
-const getMatchingTrophies = (slot, mode, trophyInventory) => {
+const getMatchingTrophies = (slotID, trophyInventory) => {
     return trophyInventory.filter((trophy) => {
-        return matchTrophy(slot, trophy, mode, trophyInventory);
+        return matchTrophy(slotID, trophy);
     });
 };
 

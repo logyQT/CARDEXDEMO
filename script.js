@@ -3,234 +3,59 @@ import {
     getPaginationInfo,
     sortTrophies,
     generateRandomTrophy,
-    generateAllInventorySlots,
-    getMatchingTrophies,
-    matchTrophy,
     getSaveObject,
     getDatabase,
     disableDrag,
-    getTrophyImage,
-    animateCards,
-    renderPaginationControls,
     generateAllTrophySlots,
     saveToLocalStorage,
     loadFromLocalStorage,
     validateInternalSaveData,
-    generateID,
     removeFromLocalStorage,
     exportToJSON,
     importFromJSON,
     updateTrophyProgress,
     getAllTrophies,
-    resetPaginationControls,
     updateOverallTrophyProgress,
     autoFillTrophySlots,
-} from "./utils/index.js";
+    renderSlots,
+} from "./modules/index.js";
 
-import { MEDIA_INPUT, PROGRESS_BAR, PROGRESS_BAR_TEXT, PAGINATION_CONTROLS, MODAL_PAGINATION_CONTROLS, VERSION_TEXT, RESET_BUTTON, IMPORT_JSON_BUTTON, DOWNLOAD_JSON_BUTTON, TROPHY_AUTOFILL_BUTTON, ADD_TROPHY_BUTTON } from "./utils/domRefs.js";
+import {
+    SHARE_BUTTON,
+    IMPORT_SAVE_FILE_BUTTON,
+    PROGRESS_BAR,
+    PROGRESS_BAR_TEXT,
+    PAGINATION_CONTROLS,
+    VERSION_TEXT,
+    RESET_BUTTON,
+    IMPORT_JSON_BUTTON,
+    DOWNLOAD_JSON_BUTTON,
+    TROPHY_AUTOFILL_BUTTON,
+    ADD_TROPHY_BUTTON,
+    SEARCH_BAR,
+    TROPHY_GRID,
+    COPY_SHARE_LINK_BUTTON,
+    CLOSE_SHARE_LINK_BUTTON,
+    SHARE_LINK_CONTAINER,
+    SHARE_LINK_INPUT,
+} from "./utils/domRefs.js";
 
-import { GAME_VERSION, VERSION, PAGE_SIZE } from "./utils/constants.js";
+import { GAME_VERSION, VERSION, PAGE_SIZE, VALID_MODES } from "./utils/constants.js";
+import { smartSearch } from "./modules/search.js";
 
 /**
  * @type {import("./utils/types.js").SaveObjectRoot}
  */
 let SaveObject = {};
 let trophyInventory = [];
-let carDex = {
-    model: [],
-    year: [],
-    color: [],
-    type: [],
+let slots = {
+    model: {},
+    year: {},
+    color: {},
+    type: {},
+    inventory: {},
 };
 let mode = "model"; // Default mode
-
-const colorLookup = {
-    Common: "rgb(255, 255, 255)",
-    Silver: "rgb(192, 192, 192)",
-    Gold: "#9F834C",
-    Diamond: "#CCE6FE",
-    Rust: "#AA8070",
-};
-
-const renderTrophySlots = (inventory, mode, currentPage) => {
-    if (mode === "inventory") {
-        updateOverallTrophyProgress(carDex, PROGRESS_BAR_TEXT, PROGRESS_BAR);
-    }
-    if (mode === "inventory" && inventory?.length === 0) {
-        const container = document.getElementById("grid");
-        container.innerHTML = "<p style='color: white; text-align: center; grid-column: span 6;'>No trophies in inventory. Add some using the random trophy button or by loading a save file.</p>";
-        resetPaginationControls(PAGINATION_CONTROLS);
-        return;
-    }
-    let totalPages = 1;
-
-    const container = document.getElementById("grid");
-    container.innerHTML = "";
-
-    const slots = mode !== "inventory" ? generateAllTrophySlots(mode) : generateAllInventorySlots(sortTrophies(inventory, ["type", "model", "year", "color"]));
-
-    mode !== "inventory"
-        ? inventory.forEach((trophy) => {
-              slots.forEach((slot) => {
-                  if (matchTrophy(slot, trophy, mode)) {
-                      slot.owned = true;
-                      slot.color = trophy.color;
-                      slot.type = trophy.type;
-                      slot.year = trophy.year;
-                      slot.brand = trophy.brand;
-                      slot.model = trophy.model;
-                      slot.name = `${trophy.brand} ${trophy.model}`;
-                  }
-              });
-          })
-        : null;
-
-    totalPages = Math.ceil(slots.length / PAGE_SIZE) || 1;
-    if (currentPage > totalPages) currentPage = totalPages;
-    const startIdx = (currentPage - 1) * PAGE_SIZE;
-    const endIdx = startIdx + PAGE_SIZE;
-    const pageSlots = slots.slice(startIdx, endIdx);
-
-    pageSlots.forEach((slot) => {
-        slot.mode = mode;
-        slot._slot = slot;
-        const card = document.createElement("div");
-        card.className = slot.owned ? "trophy-slot owned-true" : "trophy-slot owned-false";
-        if (slot.owned) card.style.setProperty("--color", colorLookup[slot.type]);
-        card.setAttribute("title", slot.owned ? "Owned - Click to change displayed trophy" : "Not Owned - Click to view matching trophies you can claim");
-        card.setAttribute("data-owned", slot.owned);
-        card.setAttribute("data-name", slot.name);
-        card.setAttribute("data-brand", slot.brand);
-        card.setAttribute("data-model", slot.model);
-        card.setAttribute("data-year", slot.year || null);
-        card.setAttribute("data-color", slot.color || null);
-        card.setAttribute("data-type", slot.type || null);
-
-        const imgColor = slot.color ? slot.color : "Black";
-        const imgType = slot.type ? slot.type : "Common";
-        const imgSrc = getTrophyImage(slot.brand, slot.model, imgColor, imgType);
-
-        const shortYear = slot.year ? `'${String(slot.year).slice(-2)}` : "";
-        card.innerHTML = `
-            <div class="trophy-slot-inner-wrapper">
-                <img src="${imgSrc}" alt="${imgColor} ${imgType}" class="trophy-slot-img">
-                <div class="trophy-slot-overlay">
-                    <div class="trophy-slot-text">
-                        <b>${shortYear} ${slot.name}</b><br>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        container.appendChild(card);
-        card.addEventListener("click", () => {
-            if (slot.mode === "inventory") {
-                // do nothing for now
-                // implement grouping later
-                // pressing would show all trophies found with exact same specs
-                return;
-            }
-            if (slot.owned === true) {
-                // return for now
-                // implement modal for viewing matching trophies
-                return;
-            } else {
-                const matches = getMatchingTrophies(slot, mode, trophyInventory);
-                if (mode === "type") {
-                    displayModal(slot._slot, sortTrophies(matches, "year"), 1);
-                }
-                if (mode === "color") {
-                    displayModal(slot._slot, sortTrophies(matches, "year"), 1);
-                }
-                if (mode === "year") {
-                    displayModal(slot._slot, sortTrophies(matches, "type"), 1);
-                }
-                if (mode === "model") {
-                    displayModal(slot._slot, sortTrophies(matches, ["type", "year", "color"]), 1);
-                }
-            }
-        });
-    });
-
-    renderPaginationControls(PAGINATION_CONTROLS, currentPage, totalPages, (newPage) => {
-        renderTrophySlots(inventory, mode, newPage);
-    });
-
-    if (mode !== "inventory") updateTrophyProgress(carDex, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
-    const NEW_TROPHY_ELEMENTS = document.querySelectorAll(".trophy-slot");
-
-    animateCards(NEW_TROPHY_ELEMENTS);
-    disableDrag(NEW_TROPHY_ELEMENTS);
-    const internalSaveData = createInternalSaveData(VERSION, carDex, trophyInventory);
-    saveToLocalStorage("internalSaveData", internalSaveData);
-};
-
-const displayModal = (slot, matches, currentPage) => {
-    const MODAL_EL = document.getElementById("slot-trophy-modal");
-    const MODAL_TITLE_EL = document.getElementById("slot-trophy-title");
-    const MODAL_BODY = document.getElementById("slot-trophy-body");
-    MODAL_TITLE_EL.innerText = `Found ${matches.length} matching ${matches.length === 1 ? "trophy" : "trophies"} for ${slot.name}`;
-    MODAL_BODY.innerHTML = "";
-    if (matches.length === 0) {
-        MODAL_BODY.innerHTML = "";
-    } else {
-        let totalPages = 1;
-        totalPages = Math.ceil(matches.length / PAGE_SIZE) || 1;
-        if (currentPage > totalPages) currentPage = totalPages;
-        const startIdx = (currentPage - 1) * PAGE_SIZE;
-        const endIdx = startIdx + PAGE_SIZE;
-        const pageSlots = matches.slice(startIdx, endIdx);
-
-        for (const trophy of pageSlots) {
-            const card = document.createElement("div");
-            card.style.setProperty("--color", colorLookup[trophy.type]);
-            card.className = "modal-card";
-
-            const imgColor = trophy.color ? trophy.color : "Black";
-            const imgType = trophy.type ? trophy.type : "Common";
-            const imgSrc = getTrophyImage(trophy.brand, trophy.model, imgColor, imgType);
-
-            const shortYear = trophy.year ? `'${String(trophy.year).slice(-2)}` : "";
-            card.innerHTML = `
-            <div class="trophy-slot-inner-wrapper">
-                <img src="${imgSrc}" alt="${imgColor} ${imgType}" class="trophy-slot-img">
-                <div class="trophy-slot-overlay">
-                    <div class="trophy-slot-text">
-                        <b>${shortYear} ${slot.name}</b><br>
-                    </div>
-                </div>
-            </div>
-        `;
-            card.addEventListener("click", () => {
-                trophy.slotID = generateID(mode, slot);
-                carDex[mode].push(trophy);
-                const _CurrentPage = getPaginationInfo(PAGINATION_CONTROLS).currentPage;
-                renderTrophySlots(carDex[mode], mode, _CurrentPage);
-                MODAL_EL.style.display = "none";
-                MODAL_BODY.innerHTML = "";
-            });
-            MODAL_BODY.appendChild(card);
-        }
-
-        renderPaginationControls(MODAL_PAGINATION_CONTROLS, currentPage, totalPages, (newPage) => {
-            displayModal(slot, matches, newPage);
-        });
-    }
-    MODAL_EL.style.display = "flex";
-
-    window.onclick = function (event) {
-        if (event.target == MODAL_EL) {
-            MODAL_EL.style.display = "none";
-            MODAL_BODY.innerHTML = "";
-        }
-    };
-    window.onkeydown = function (event) {
-        if (event.key === "Escape") {
-            MODAL_EL.style.display = "none";
-            MODAL_BODY.innerHTML = "";
-        }
-    };
-};
 
 // Load and read save file
 
@@ -244,7 +69,8 @@ const read_save = async (input) => {
     const file = input.files[0];
 
     const db = await getDatabase(file);
-    if (!db) {
+
+    if (!db || db.db === null) {
         alert("Failed to open the database. Please ensure a valid save file is selected.");
         return;
     }
@@ -255,10 +81,15 @@ const read_save = async (input) => {
     const end = performance.now();
     console.info(`Database query and parsing took ${(end - start).toFixed(2)} ms`);
     console.info("Database loaded successfully.");
-    console.info(SaveObject);
+    // console.info(SaveObject);
 
     trophyInventory = getAllTrophies(SaveObject);
-    renderTrophySlots(trophyInventory, "inventory", 1);
+    trophyInventory = sortTrophies(trophyInventory, ["type", "model", "year", "color"]);
+    //console.log(trophyInventory);
+
+    slots["inventory"] = generateAllTrophySlots("inventory", trophyInventory);
+    renderSlots(slots["inventory"], TROPHY_GRID, 1, PAGE_SIZE, PAGINATION_CONTROLS, slots, trophyInventory);
+    updateOverallTrophyProgress(slots, PROGRESS_BAR_TEXT, PROGRESS_BAR);
 };
 
 // App interactions
@@ -269,23 +100,19 @@ tabs.forEach((tab) => {
         tabs.forEach((t) => t.classList.remove("active"));
         tab.classList.add("active");
         mode = tab.getAttribute("data-mode");
-        if (mode === "inventory") {
-            renderTrophySlots(trophyInventory, mode, 1);
-            return;
-        }
-        renderTrophySlots(carDex[mode], mode, 1);
-        updateTrophyProgress(carDex, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
+        SEARCH_BAR.value = "";
+        renderSlots(slots[mode], TROPHY_GRID, 1, PAGE_SIZE, PAGINATION_CONTROLS, slots, trophyInventory);
+        updateTrophyProgress(slots, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
     });
 });
 
 ADD_TROPHY_BUTTON.addEventListener("click", () => {
     trophyInventory.push(generateRandomTrophy());
-
-    if (mode === "inventory") {
-        const totalPages = Math.ceil(trophyInventory.length / PAGE_SIZE) || 1;
-        renderTrophySlots(trophyInventory, mode, totalPages);
-    }
-    const internalSaveData = createInternalSaveData(VERSION, carDex, trophyInventory);
+    trophyInventory = sortTrophies(trophyInventory, ["type", "model", "year", "color"]);
+    slots["inventory"] = generateAllTrophySlots("inventory", trophyInventory);
+    renderSlots(slots["inventory"], TROPHY_GRID, 1, PAGE_SIZE, PAGINATION_CONTROLS, slots, trophyInventory);
+    updateOverallTrophyProgress(slots, PROGRESS_BAR_TEXT, PROGRESS_BAR);
+    const internalSaveData = createInternalSaveData(VERSION, slots, trophyInventory);
     saveToLocalStorage("internalSaveData", internalSaveData);
 });
 
@@ -295,13 +122,14 @@ TROPHY_AUTOFILL_BUTTON.addEventListener("click", () => {
         return;
     }
     mode = mode === "inventory" ? "model" : mode;
-    carDex = autoFillTrophySlots(carDex, trophyInventory);
+    slots = autoFillTrophySlots(slots, trophyInventory);
     const _CurrentPage = getPaginationInfo(PAGINATION_CONTROLS).currentPage;
-    renderTrophySlots(carDex[mode], mode, _CurrentPage);
+    renderSlots(slots[mode], TROPHY_GRID, _CurrentPage, PAGE_SIZE, PAGINATION_CONTROLS, slots, trophyInventory);
+    updateTrophyProgress(slots, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
 });
 
 DOWNLOAD_JSON_BUTTON.addEventListener("click", () => {
-    const internalSaveData = createInternalSaveData(VERSION, carDex, trophyInventory);
+    const internalSaveData = createInternalSaveData(VERSION, slots, trophyInventory);
     exportToJSON(internalSaveData);
 });
 
@@ -310,11 +138,11 @@ IMPORT_JSON_BUTTON.addEventListener("change", (event) => {
     if (file) {
         importFromJSON(file, (data) => {
             console.info("Imported data:", data);
-            carDex = data.carDex;
+            slots = data.slots;
             trophyInventory = data.trophyInventory;
             const _CurrentPage = getPaginationInfo(PAGINATION_CONTROLS).currentPage;
-            renderTrophySlots(carDex[mode], mode, _CurrentPage);
-            updateTrophyProgress(carDex, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
+            renderSlots(slots[mode], TROPHY_GRID, _CurrentPage, PAGE_SIZE, PAGINATION_CONTROLS, slots, trophyInventory);
+            updateTrophyProgress(slots, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
         });
     }
 });
@@ -322,26 +150,288 @@ IMPORT_JSON_BUTTON.addEventListener("change", (event) => {
 RESET_BUTTON.addEventListener("click", () => {
     removeFromLocalStorage("internalSaveData");
     trophyInventory = [];
-    carDex = { model: [], year: [], color: [], type: [] };
     mode = "model";
-    renderTrophySlots(carDex[mode], mode, 1);
-    updateTrophyProgress(carDex, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
+    for (const mode in slots) {
+        slots[mode] = generateAllTrophySlots(mode, trophyInventory);
+    }
+    renderSlots(slots[mode], TROPHY_GRID, 1, PAGE_SIZE, PAGINATION_CONTROLS, slots, trophyInventory);
+    updateTrophyProgress(slots, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
     console.info("Save data reset.");
 });
 
-VERSION_TEXT.innerText = `v${VERSION} (Hotfix ${GAME_VERSION})`;
-MEDIA_INPUT.addEventListener("change", (event) => read_save(event.target));
-const savedData = loadFromLocalStorage("internalSaveData");
+let typingTimer;
+const doneTypingInterval = 500; // ms
+SEARCH_BAR.addEventListener("input", (event) => {
+    if (typingTimer) clearTimeout(typingTimer);
+    typingTimer = setTimeout(() => {
+        const query = event.target.value.trim();
 
+        renderSlots(smartSearch(query, slots[mode]), TROPHY_GRID, 1, PAGE_SIZE, PAGINATION_CONTROLS, slots, trophyInventory);
+    }, doneTypingInterval);
+});
+
+SHARE_BUTTON.addEventListener("click", async () => {
+    const modelToNum = {
+        striker: 0,
+        vanguard: 1,
+        ignis: 2,
+        p2: 3,
+        p3: 4,
+        p4: 5,
+        "280g": 6,
+        allegretto: 7,
+        andante: 8,
+        largo: 9,
+        pulse: 10,
+        boulder: 11,
+        canyon: 12,
+        ridge: 13,
+        cortega: 14,
+        gale: 15,
+        thunder: 16,
+        thunderx: 17,
+        voyager: 18,
+        "600c": 19,
+        journey: 20,
+    };
+    const brandToNum = { "apex motors": 0, ardena: 1, "cargo wise": 2, cavallaro: 3, "harmonia vehicles": 4, ngd: 5, "off rider": 6, phantom: 7, umx: 8, "zen motors": 9 };
+    const modeToNum = { model: 0, year: 1, color: 2, type: 3 };
+    const colorToNum = { null: 0, black: 1, silver: 2, red: 3, blue: 4, purple: 5, navyblue: 6, white: 7, gray: 8, gold: 9, green: 10, brown: 11, orange: 12, yellow: 13, graphite: 14, "light-blue": 15, "light-green": 16 };
+    const typeToNum = { null: 0, common: 1, rust: 2, silver: 3, gold: 4, diamond: 5 };
+    const shortYear = (year) => {
+        if (!year || typeof year !== "number") return 0;
+        if (year < 2000) {
+            return year - 1900;
+        }
+        return year - 2000;
+    };
+    function minifyID(id) {
+        const parts = id.replace(/_/g, " ").split("+");
+        let [mode, brand, model, year, color, type] = parts;
+        let str = `${modeToNum[mode]}+${brandToNum[brand]}+${modelToNum[model]}`;
+        if (year === "null") str += `+0`;
+        else str += `+${shortYear(Number(year))}`;
+        str += `+${colorToNum[color]}`;
+        str += `+${typeToNum[type]}`;
+        return str;
+    }
+    function minifyObj(obj) {
+        const minified = {};
+        for (const key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                const mkey = minifyID(key);
+                // minified[mkey] = {
+                //     m: modelToNum[(obj[key].model ?? "").toLowerCase()],
+                //     b: brandToNum[(obj[key].brand ?? "").toLowerCase()],
+                //     o: obj[key].owned ? 1 : 0,
+                // };
+                // if (obj[key].year) minified[mkey].y = shortYear(obj[key].year);
+                // if (obj[key].color) minified[mkey].c = colorToNum[(obj[key].color ?? "").toLowerCase()];
+                // if (obj[key].type) minified[mkey].t = typeToNum[(obj[key].type ?? "").toLowerCase()];
+                let { brand, model, year, color, type, owned } = obj[key];
+                let str = `${brandToNum[(brand ?? "").toLowerCase()]}+${modelToNum[(model ?? "").toLowerCase()]}`;
+                if (year === null) str += `+0`;
+                else str += `+${shortYear(Number(year))}`;
+                if (color === null) str += `+0`;
+                else str += `+${colorToNum[(color ?? "").toLowerCase()]}`;
+                if (type === null) str += `+0`;
+                else str += `+${typeToNum[(type ?? "").toLowerCase()]}`;
+                str += `+${owned ? 1 : 0}`;
+                minified[mkey] = str;
+            }
+        }
+        return minified;
+    }
+    async function generateCardexUrl(slots) {
+        const json = {
+            slots: {
+                0: minifyObj(slots.model),
+                1: minifyObj(slots.year),
+                2: minifyObj(slots.color),
+                3: minifyObj(slots.type),
+            },
+            v: VERSION,
+        };
+        console.log(json);
+        const jsonStr = JSON.stringify(json);
+        const compressed = LZString.compressToEncodedURIComponent(jsonStr);
+        const saveStr = `#${compressed}`;
+
+        async function getLink(str) {
+            try {
+                const response = await fetch("https://cardex-api.vercel.app/api/addItem", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ str: str }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                return result;
+            } catch (err) {
+                console.error("Failed to add item:", err);
+            }
+        }
+
+        const result = await getLink(saveStr);
+        if (result && result?.data?.id) {
+            return `https://logyqt.github.io/CARDEXDEMO/#${result.data.id}`;
+        } else {
+            alert("Failed to generate shareable link. Please try again later.");
+            return null;
+        }
+    }
+
+    const shareUrl = await generateCardexUrl(slots);
+    if (shareUrl) {
+        SHARE_LINK_INPUT.value = shareUrl;
+        SHARE_LINK_CONTAINER.style.display = "flex";
+    }
+    COPY_SHARE_LINK_BUTTON.onclick = () => {
+        navigator.clipboard.writeText(SHARE_LINK_INPUT.value).then(
+            () => {
+                alert("Link copied to clipboard!");
+            },
+            (err) => {
+                console.error("Could not copy text: ", err);
+            }
+        );
+    };
+    CLOSE_SHARE_LINK_BUTTON.onclick = () => {
+        SHARE_LINK_CONTAINER.style.display = "none";
+    };
+});
+
+VERSION_TEXT.innerText = `v${VERSION} (game ver. ${GAME_VERSION})`;
+IMPORT_SAVE_FILE_BUTTON.addEventListener("change", (event) => read_save(event.target));
+
+if (window.location.hash && window.location.hash.length > 1) {
+    const hash = window.location.hash.substring(1);
+    async function fetchSharedData(id) {
+        try {
+            const response = await fetch(`https://cardex-api.vercel.app/api/getItem/?id=${id}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            const result = await response.json();
+            return result;
+        } catch (err) {
+            console.error("Failed to fetch shared data:", err);
+            return null;
+        }
+    }
+    fetchSharedData(hash).then((data) => {
+        console.log(data);
+        if (data && data?.data?.str) {
+            //console.log("Fetched shared data string:", data.data.str.slice(1));
+            const decompressed = LZString.decompressFromEncodedURIComponent(data.data.str.slice(1));
+            //window.location.hash = "";
+            if (decompressed) {
+                const parsed = JSON.parse(decompressed);
+
+                function restoreData(minified) {
+                    const numToModel = {
+                        0: "Striker",
+                        1: "Vanguard",
+                        2: "Ignis",
+                        3: "P2",
+                        4: "P3",
+                        5: "P4",
+                        6: "280G",
+                        7: "Allegretto",
+                        8: "Andante",
+                        9: "Largo",
+                        10: "Pulse",
+                        11: "Boulder",
+                        12: "Canyon",
+                        13: "Ridge",
+                        14: "Cortega",
+                        15: "Gale",
+                        16: "Thunder",
+                        17: "ThunderX",
+                        18: "Voyager",
+                        19: "600C",
+                        20: "Journey",
+                    };
+                    const numToBrand = { 0: "Apex Motors", 1: "Ardena", 2: "Cargo Wise", 3: "Cavallaro", 4: "Harmonia Vehicles", 5: "NGD", 6: "Off Rider", 7: "Phantom", 8: "UMX", 9: "Zen Motors" };
+                    const numToColor = { 0: null, 1: "Black", 2: "Silver", 3: "Red", 4: "Blue", 5: "Purple", 6: "NavyBlue", 7: "White", 8: "Gray", 9: "Gold", 10: "Green", 11: "Brown", 12: "Orange", 13: "Yellow", 14: "Graphite", 15: "Light-Blue", 16: "Light-Green" };
+                    const numToType = { 0: null, 1: "Common", 2: "Rust", 3: "Silver", 4: "Gold", 5: "Diamond" };
+                    const restored = {};
+                    function restoreID(id) {
+                        const parts = id.split("+");
+                        const modeToStr = { 0: "model", 1: "year", 2: "color", 3: "type" };
+                        let str = "";
+                        str += modeToStr[parts[0]];
+                        str += `+${numToBrand[parts[1]]}`;
+                        str += `+${numToModel[parts[2]]}`;
+                        if (parts[3] === "0") str += `+null`;
+                        else {
+                            const yearNum = Number(parts[3]);
+                            const fullYear = yearNum + (yearNum <= 10 ? 2000 : 1900);
+                            str += `+${fullYear}`;
+                        }
+                        if (parts[4] === "0") str += `+null`;
+                        else str += `+${numToColor[parts[4]]}`;
+                        if (parts[5] === "0") str += `+null`;
+                        else str += `+${numToType[parts[5]]}`;
+                        return str.toLowerCase().replace(/ /g, "_");
+                    }
+                    for (const mkey in minified) {
+                        if (minified.hasOwnProperty(mkey)) {
+                            const key = restoreID(mkey);
+                            const parts = minified[mkey].split("+");
+
+                            const name = `${numToBrand[parts[0]]} ${numToModel[parts[1]]}`;
+                            const brand = numToBrand[parts[0]];
+                            const model = numToModel[parts[1]];
+                            const year = parts[2] === "0" ? null : Number(parts[2]) + (Number(parts[2]) <= 10 ? 2000 : 1900);
+                            const color = numToColor[parts[3]];
+                            const type = numToType[parts[4]];
+                            const owned = parts[5] === "1" ? true : false;
+                            restored[key] = { name, model, brand, year, color, type, owned };
+                        }
+                    }
+                    return restored;
+                }
+                console.log("Decompressed shared data:", parsed);
+                slots = {
+                    model: restoreData(parsed.slots["0"]),
+                    year: restoreData(parsed.slots["1"]),
+                    color: restoreData(parsed.slots["2"]),
+                    type: restoreData(parsed.slots["3"]),
+                    inventory: slots.inventory,
+                };
+                renderSlots(slots["model"], TROPHY_GRID, 1, PAGE_SIZE, PAGINATION_CONTROLS, slots, trophyInventory);
+            }
+        }
+    });
+} else {
+    console.info("No shareable link hash found in URL.");
+}
+
+const savedData = loadFromLocalStorage("internalSaveData");
 if (validateInternalSaveData(savedData, VERSION)) {
     console.info(savedData);
-    carDex = savedData.carDex;
+    slots = savedData.slots;
     trophyInventory = savedData.trophyInventory;
     console.info("Loaded saved data from localStorage.");
 } else {
+    VALID_MODES.forEach((m) => {
+        slots[m] = generateAllTrophySlots(m, trophyInventory);
+    });
     console.warn("No valid saved data found in localStorage.");
 }
 
-renderTrophySlots(carDex[mode], mode, 1);
-updateTrophyProgress(carDex, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
+renderSlots(slots[mode], TROPHY_GRID, 1, PAGE_SIZE, PAGINATION_CONTROLS, slots, trophyInventory);
+updateTrophyProgress(slots, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
 disableDrag(document.querySelectorAll("*"));

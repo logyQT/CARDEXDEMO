@@ -79,12 +79,43 @@ body {
 }
 .controls {
     display: flex;
+    flex-direction: column;
     gap: 0.5rem;
     align-items: center;
     flex: 1;
 }
-.search {
+.sorting-options {
+    display: flex;
+    flex-direction: row;
+    gap: 0.25rem;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 0.5rem;
+}
+.sort-state-button {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    padding: 6px 10px;
+    border-radius: 8px;
+    color: inherit;
+    cursor: pointer;
+    transition: 0.3s;
+    user-select: none;
+    font-size: 0.875rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.search-bar {
     flex: 1;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    background: rgba(255, 255, 255, 0.02);
+    margin: 0.5rem;
+    color: inherit;
 }
 
 .grid {
@@ -493,4 +524,55 @@ input.hidden {
 .tab.active {
     background: linear-gradient(90deg, rgba(96, 165, 250, 0.14), rgba(60, 99, 255, 0.06));
     border-color: rgba(96, 165, 250, 0.2);
+}
+#share-link-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    /* display: flex; */
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+#share-link-box {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+#share-link-text {
+    font-size: 1.2rem;
+    color: whitesmoke;
+}
+#share-link-input {
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    background: rgba(255, 255, 255, 0.02);
+    color: inherit;
+    font-size: 1rem;
+}
+#copy-share-link-btn,
+#close-share-link-btn {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    padding: 8px 16px;
+    border-radius: 8px;
+    color: inherit;
+    cursor: pointer;
+    transition: 0.3s;
+    user-select: none;
+    font-size: 1rem;
+    font-weight: 600;
 }

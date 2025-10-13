@@ -27,6 +27,8 @@ const generateRandomTrophy = () => {
         color: rcolor,
         type: rtype,
         year: ryear,
+        name: `${rbrand} ${rmodel}`,
+        owned: true,
     };
 };
 

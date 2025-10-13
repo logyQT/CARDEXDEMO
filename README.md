@@ -1,43 +1,43 @@
 # [CDS CarDex Demo](https://logyqt.github.io/CARDEXDEMO/)
 
-This is a small demo project showcasing a single game feature. It’s a quick example designed to share one idea and spark inspiration.
+This demo project highlights a single game mechanic, offering a quick example to spark ideas and inspire creativity.
 
 > **Note:**  
-> This project was made for fun and to practice programming. It is not intended to be updated or maintained.
+> Created for fun and programming practice, this project is not intended for ongoing updates or maintenance.
 
 ---
 
 **Disclaimer:**  
-This project is not affiliated with, endorsed by, or associated with the developers or publishers of Car Dealer Simulator. All trademarks and copyrights remain the property of their respective owners.
+This project is an independent creation and is not affiliated with, endorsed by, or associated with the developers or publishers of Car Dealer Simulator. All trademarks and copyrights belong to their respective owners.
 
 ## How to Use
 
--   To get trophies, use the **Random Trophy** button or upload a `.hrs` save file located in `%localappdata%/CarDealerSimulator/Saved`.
--   To slot a trophy, simply press an empty slot.
--   All changes are saved instantly, and your progress is kept inside the browser's local storage.
+-   Earn trophies by clicking the **Random Trophy** button or uploading a `.hrs` save file from `%localappdata%/CarDealerSimulator/Saved`.
+-   Slot a trophy by clicking any empty slot.
+-   Progress is saved instantly and stored in your browser’s local storage.
 
 ## Potential Features
 
-Here are some ideas for future enhancements:
+Possible future enhancements include:
 
--   **Rewards:** Unlock cosmetic upgrades or new gameplay functionalities as you progress.
--   **Search:** Quickly find specific cars using a search bar.
--   **Sorting:** Organize the trophy index by name, type, or other attributes.
--   **Filtering:** View only missing or owned cars to track collection progress more easily.
+-   **Rewards:** Unlock cosmetic upgrades or new gameplay features as you progress.
+-   ~~**Search:** Locate specific cars quickly using a search bar.~~ Has been implemented in 2.0.2 release.
+-   **Sorting:** Arrange the trophy index by name, type, or other criteria.
+-   ~~**Filtering:** Display only missing or owned cars to easily track your collection.~~ Implemented by the search bar - you can search for missing / owned cars as of 2.0.2 release.
 
-Even if it doesn’t receive more features, the demo serves as a reference for anyone interested in this type of mechanic.
+Even if no further features are added, this demo serves as a reference for anyone interested in similar mechanics.
 
-Some features are missing and may or may not be implemented in the future. The current version focuses on a single mechanic, but additional functionality could be added later depending on interest or available time.
+Some features are currently missing and may be added in the future, depending on interest and available time. The current version focuses on one core mechanic, with room for expansion.
 
 ## Limitations
 
-Please note that this demo is not highly flexible or responsive. The app may display incorrectly on smaller devices or screens. For the best experience, use a desktop browser.
+This demo is not highly flexible or responsive. It may not display correctly on smaller screens or devices. For the best experience, use a desktop browser.
 
 ## Acknowledgments
 
-Big thanks to **.faulty.** for sharing mapping data and game assets.
+Special thanks to **.faulty.** for providing mapping data and game assets.
 
-Also, shoutout to **duckobread**, the community manager, for giving the green light to release this project on GitHub.
+Thanks also to **duckobread**, the community manager, for approving the release of this project on GitHub.
 
 ## Changelog
 
@@ -45,5 +45,13 @@ Also, shoutout to **duckobread**, the community manager, for giving the green li
 
 -   Added the **Phantom ThunderX** trophy.
 -   Fixed issues with importing JSON files.
--   Improved trophy retrieval from save files by also checking the player inventory.
--   Added a new **Autofill** button to quickly fill all trophy slots automatically.
+-   Improved trophy retrieval from save files by checking the player inventory.
+-   Introduced an **Autofill** button to quickly fill all trophy slots.
+
+### 2.0.2
+
+-   Now detects trophies left in the game world.
+-   Added a search bar.
+-   You can now swap out collected trophies.
+-   You can now share your collection via a link.
+-   **KNOWN BUG** - cannot slot or change trophies when in search mode.
