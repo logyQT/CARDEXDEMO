@@ -335,7 +335,7 @@ if (window.location.hash && window.location.hash.length > 1) {
         if (data && data?.data?.str) {
             //console.log("Fetched shared data string:", data.data.str.slice(1));
             const decompressed = LZString.decompressFromEncodedURIComponent(data.data.str.slice(1));
-            //window.location.hash = "";
+            window.location.hash = "";
             if (decompressed) {
                 const parsed = JSON.parse(decompressed);
 
