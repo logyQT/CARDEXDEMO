@@ -209,7 +209,7 @@ SHARE_BUTTON.addEventListener("click", async () => {
         const parts = id.replace(/_/g, " ").split("+");
         let [mode, brand, model, year, color, type] = parts;
         let str = `${modeToNum[mode]}+${brandToNum[brand]}+${modelToNum[model]}`;
-        if (year === "null") str += `+0`;
+        if (year === "null") str += `+-1`;
         else str += `+${shortYear(Number(year))}`;
         str += `+${colorToNum[color]}`;
         str += `+${typeToNum[type]}`;
@@ -377,7 +377,8 @@ if (window.location.hash && window.location.hash.length > 1) {
                         if (parts[3] === "0") str += `+null`;
                         else {
                             const yearNum = Number(parts[3]);
-                            const fullYear = yearNum + (yearNum <= 10 ? 2000 : 1900);
+                            let fullYear = yearNum + (yearNum <= 10 ? 2000 : 1900);
+                            if (yearNum === -1) fullYear = null;
                             str += `+${fullYear}`;
                         }
                         if (parts[4] === "0") str += `+null`;
@@ -394,7 +395,7 @@ if (window.location.hash && window.location.hash.length > 1) {
                             const name = `${numToBrand[parts[0]]} ${numToModel[parts[1]]}`;
                             const brand = numToBrand[parts[0]];
                             const model = numToModel[parts[1]];
-                            const year = parts[2] === "0" ? null : Number(parts[2]) + (Number(parts[2]) <= 10 ? 2000 : 1900);
+                            const year = parts[2] === "-1" ? null : Number(parts[2]) + (Number(parts[2]) <= 10 ? 2000 : 1900);
                             const color = numToColor[parts[3]];
                             const type = numToType[parts[4]];
                             const owned = parts[5] === "1" ? true : false;
