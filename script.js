@@ -252,7 +252,7 @@ SHARE_BUTTON.addEventListener("click", async () => {
             },
             v: VERSION,
         };
-        console.log(json);
+        //console.log(json);
         const jsonStr = JSON.stringify(json);
         const compressed = LZString.compressToEncodedURIComponent(jsonStr);
         const saveStr = `#${compressed}`;
@@ -331,7 +331,7 @@ if (window.location.hash && window.location.hash.length > 1) {
         }
     }
     fetchSharedData(hash).then((data) => {
-        console.log(data);
+        //console.log(data);
         if (data && data?.data?.str) {
             //console.log("Fetched shared data string:", data.data.str.slice(1));
             const decompressed = LZString.decompressFromEncodedURIComponent(data.data.str.slice(1));
@@ -403,7 +403,7 @@ if (window.location.hash && window.location.hash.length > 1) {
                     }
                     return restored;
                 }
-                console.log("Decompressed shared data:", parsed);
+                //console.log("Decompressed shared data:", parsed);
                 slots = {
                     model: restoreData(parsed.slots["0"]),
                     year: restoreData(parsed.slots["1"]),
