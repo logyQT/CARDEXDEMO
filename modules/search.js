@@ -83,7 +83,7 @@ const matchesYear = (trophy, yearExprs) => {
     });
 };
 
-const filterTrophies = (trophies = {}, criteria = {}) => {
+const filterTrophieSlots = (trophies = {}, criteria = {}) => {
     if (typeof trophies !== "object" || trophies === null) return {};
 
     return Object.fromEntries(
@@ -107,7 +107,7 @@ const smartSearch = (searchString, trophies, db = wordDatabase) => {
     const tokens = parseSearchString(searchString);
     const criteria = buildCriteria(tokens, db);
 
-    return filterTrophies(trophies, criteria);
+    return filterTrophieSlots(trophies, criteria);
 };
 
-export { smartSearch, filterTrophies };
+export { smartSearch };

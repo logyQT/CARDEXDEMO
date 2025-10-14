@@ -1,4 +1,5 @@
 const sortTrophies = (trophies, criterion) => {
+    console.log(trophies);
     if (Array.isArray(criterion)) {
         const criteria = criterion;
         const compare = (a, b) => {
@@ -28,6 +29,7 @@ const sortTrophies = (trophies, criterion) => {
         };
         return [...trophies].sort(compare);
     }
+
     const sorted = [...trophies];
     switch (criterion) {
         case "type":

@@ -25,3 +25,4 @@ export * from "./matchBestTrophy.js";
 export * from "./search.js";
 export * from "./renderSlots.js";
 export * from "./displayModal.js";
+export * from "./filterTrophies.js";
