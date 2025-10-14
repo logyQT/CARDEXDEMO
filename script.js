@@ -42,6 +42,8 @@ import {
 
 import { GAME_VERSION, VERSION, PAGE_SIZE, VALID_MODES } from "./utils/constants.js";
 import { smartSearch } from "./modules/search.js";
+import { CONFIG } from "./config/config.js";
+import { lockInteraction, unlockInteraction } from "./utils/interactionLock.js";
 
 /**
  * @type {import("./utils/types.js").SaveObjectRoot}
@@ -160,7 +162,7 @@ RESET_BUTTON.addEventListener("click", () => {
 });
 
 let typingTimer;
-const doneTypingInterval = 500; // ms
+const doneTypingInterval = 500;
 SEARCH_BAR.addEventListener("input", (event) => {
     if (typingTimer) clearTimeout(typingTimer);
     typingTimer = setTimeout(() => {
@@ -170,96 +172,31 @@ SEARCH_BAR.addEventListener("input", (event) => {
     }, doneTypingInterval);
 });
 
+VERSION_TEXT.innerText = `v${VERSION} (game ver. ${GAME_VERSION})`;
+IMPORT_SAVE_FILE_BUTTON.addEventListener("change", (event) => read_save(event.target));
+
+import { compressTrophySlotsObject, decompressTrophySlotsObject } from "./utils/compressionUtils.js";
+
 SHARE_BUTTON.addEventListener("click", async () => {
-    const modelToNum = {
-        striker: 0,
-        vanguard: 1,
-        ignis: 2,
-        p2: 3,
-        p3: 4,
-        p4: 5,
-        "280g": 6,
-        allegretto: 7,
-        andante: 8,
-        largo: 9,
-        pulse: 10,
-        boulder: 11,
-        canyon: 12,
-        ridge: 13,
-        cortega: 14,
-        gale: 15,
-        thunder: 16,
-        thunderx: 17,
-        voyager: 18,
-        "600c": 19,
-        journey: 20,
-    };
-    const brandToNum = { "apex motors": 0, ardena: 1, "cargo wise": 2, cavallaro: 3, "harmonia vehicles": 4, ngd: 5, "off rider": 6, phantom: 7, umx: 8, "zen motors": 9 };
-    const modeToNum = { model: 0, year: 1, color: 2, type: 3 };
-    const colorToNum = { null: 0, black: 1, silver: 2, red: 3, blue: 4, purple: 5, navyblue: 6, white: 7, gray: 8, gold: 9, green: 10, brown: 11, orange: 12, yellow: 13, graphite: 14, "light-blue": 15, "light-green": 16 };
-    const typeToNum = { null: 0, common: 1, rust: 2, silver: 3, gold: 4, diamond: 5 };
-    const shortYear = (year) => {
-        if (!year || typeof year !== "number") return 0;
-        if (year < 2000) {
-            return year - 1900;
-        }
-        return year - 2000;
-    };
-    function minifyID(id) {
-        const parts = id.replace(/_/g, " ").split("+");
-        let [mode, brand, model, year, color, type] = parts;
-        let str = `${modeToNum[mode]}+${brandToNum[brand]}+${modelToNum[model]}`;
-        if (year === "null") str += `+-1`;
-        else str += `+${shortYear(Number(year))}`;
-        str += `+${colorToNum[color]}`;
-        str += `+${typeToNum[type]}`;
-        return str;
-    }
-    function minifyObj(obj) {
-        const minified = {};
-        for (const key in obj) {
-            if (obj.hasOwnProperty(key)) {
-                const mkey = minifyID(key);
-                // minified[mkey] = {
-                //     m: modelToNum[(obj[key].model ?? "").toLowerCase()],
-                //     b: brandToNum[(obj[key].brand ?? "").toLowerCase()],
-                //     o: obj[key].owned ? 1 : 0,
-                // };
-                // if (obj[key].year) minified[mkey].y = shortYear(obj[key].year);
-                // if (obj[key].color) minified[mkey].c = colorToNum[(obj[key].color ?? "").toLowerCase()];
-                // if (obj[key].type) minified[mkey].t = typeToNum[(obj[key].type ?? "").toLowerCase()];
-                let { brand, model, year, color, type, owned } = obj[key];
-                let str = `${brandToNum[(brand ?? "").toLowerCase()]}+${modelToNum[(model ?? "").toLowerCase()]}`;
-                if (year === null) str += `+0`;
-                else str += `+${shortYear(Number(year))}`;
-                if (color === null) str += `+0`;
-                else str += `+${colorToNum[(color ?? "").toLowerCase()]}`;
-                if (type === null) str += `+0`;
-                else str += `+${typeToNum[(type ?? "").toLowerCase()]}`;
-                str += `+${owned ? 1 : 0}`;
-                minified[mkey] = str;
-            }
-        }
-        return minified;
-    }
+    lockInteraction();
     async function generateCardexUrl(slots) {
         const json = {
             slots: {
-                0: minifyObj(slots.model),
-                1: minifyObj(slots.year),
-                2: minifyObj(slots.color),
-                3: minifyObj(slots.type),
+                0: compressTrophySlotsObject(slots.model),
+                1: compressTrophySlotsObject(slots.year),
+                2: compressTrophySlotsObject(slots.color),
+                3: compressTrophySlotsObject(slots.type),
             },
             v: VERSION,
         };
-        //console.log(json);
+        console.log("Compressed data:", json);
         const jsonStr = JSON.stringify(json);
         const compressed = LZString.compressToEncodedURIComponent(jsonStr);
         const saveStr = `#${compressed}`;
 
         async function getLink(str) {
             try {
-                const response = await fetch("https://cardex-api.vercel.app/api/addItem", {
+                const response = await fetch(`${CONFIG.API_URL}/api/addItem`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -280,18 +217,18 @@ SHARE_BUTTON.addEventListener("click", async () => {
 
         const result = await getLink(saveStr);
         if (result && result?.data?.id) {
+            unlockInteraction();
             return `https://logyqt.github.io/CARDEXDEMO/#${result.data.id}`;
         } else {
-            alert("Failed to generate shareable link. Please try again later.");
-            return null;
+            unlockInteraction();
+            return "Failed to generate shareable link. Please try again later.";
         }
     }
 
-    const shareUrl = await generateCardexUrl(slots);
-    if (shareUrl) {
-        SHARE_LINK_INPUT.value = shareUrl;
-        SHARE_LINK_CONTAINER.style.display = "flex";
-    }
+    SHARE_LINK_CONTAINER.style.display = "flex";
+    SHARE_LINK_INPUT.value = "Generating link, please wait...";
+    SHARE_LINK_INPUT.value = await generateCardexUrl(slots);
+
     COPY_SHARE_LINK_BUTTON.onclick = () => {
         navigator.clipboard.writeText(SHARE_LINK_INPUT.value).then(
             () => {
@@ -307,132 +244,72 @@ SHARE_BUTTON.addEventListener("click", async () => {
     };
 });
 
-VERSION_TEXT.innerText = `v${VERSION} (game ver. ${GAME_VERSION})`;
-IMPORT_SAVE_FILE_BUTTON.addEventListener("change", (event) => read_save(event.target));
+const loadFromLocal = () => {
+    const savedData = loadFromLocalStorage("internalSaveData");
+    if (validateInternalSaveData(savedData, VERSION)) {
+        console.info(savedData);
+        slots = savedData.slots;
+        trophyInventory = savedData.trophyInventory;
+        console.info("Loaded saved data from localStorage.");
+    } else {
+        VALID_MODES.forEach((m) => {
+            slots[m] = generateAllTrophySlots(m, trophyInventory);
+        });
+        console.warn("No valid saved data found in localStorage.");
+    }
+    renderSlots(slots[mode], TROPHY_GRID, 1, PAGE_SIZE, PAGINATION_CONTROLS, slots, trophyInventory);
+};
+
+const fetchSharedData = async (id) => {
+    const response = await fetch(`${CONFIG.API_URL}/api/getItem/?id=${id}`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        },
+    });
+    if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    return await response.json();
+};
 
 if (window.location.hash && window.location.hash.length > 1) {
+    lockInteraction();
+    TROPHY_GRID.innerHTML = `<p style="text-align: center; font-size: 1.2em; color: #666; grid-column: 1/-1">Loading shared data, please wait...</p>`;
     const hash = window.location.hash.substring(1);
-    async function fetchSharedData(id) {
-        try {
-            const response = await fetch(`https://cardex-api.vercel.app/api/getItem/?id=${id}`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            });
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            const result = await response.json();
-            return result;
-        } catch (err) {
-            console.error("Failed to fetch shared data:", err);
-            return null;
-        }
+    let fetchedData;
+
+    try {
+        fetchedData = await fetchSharedData(hash);
+    } catch (err) {
+        console.error("Error fetching shared data:", err);
+        unlockInteraction();
     }
-    fetchSharedData(hash).then((data) => {
-        //console.log(data);
-        if (data && data?.data?.str) {
-            //console.log("Fetched shared data string:", data.data.str.slice(1));
-            const decompressed = LZString.decompressFromEncodedURIComponent(data.data.str.slice(1));
-            window.location.hash = "";
-            if (decompressed) {
-                const parsed = JSON.parse(decompressed);
 
-                function restoreData(minified) {
-                    const numToModel = {
-                        0: "Striker",
-                        1: "Vanguard",
-                        2: "Ignis",
-                        3: "P2",
-                        4: "P3",
-                        5: "P4",
-                        6: "280G",
-                        7: "Allegretto",
-                        8: "Andante",
-                        9: "Largo",
-                        10: "Pulse",
-                        11: "Boulder",
-                        12: "Canyon",
-                        13: "Ridge",
-                        14: "Cortega",
-                        15: "Gale",
-                        16: "Thunder",
-                        17: "ThunderX",
-                        18: "Voyager",
-                        19: "600C",
-                        20: "Journey",
-                    };
-                    const numToBrand = { 0: "Apex Motors", 1: "Ardena", 2: "Cargo Wise", 3: "Cavallaro", 4: "Harmonia Vehicles", 5: "NGD", 6: "Off Rider", 7: "Phantom", 8: "UMX", 9: "Zen Motors" };
-                    const numToColor = { 0: null, 1: "Black", 2: "Silver", 3: "Red", 4: "Blue", 5: "Purple", 6: "NavyBlue", 7: "White", 8: "Gray", 9: "Gold", 10: "Green", 11: "Brown", 12: "Orange", 13: "Yellow", 14: "Graphite", 15: "Light-Blue", 16: "Light-Green" };
-                    const numToType = { 0: null, 1: "Common", 2: "Rust", 3: "Silver", 4: "Gold", 5: "Diamond" };
-                    const restored = {};
-                    function restoreID(id) {
-                        const parts = id.split("+");
-                        const modeToStr = { 0: "model", 1: "year", 2: "color", 3: "type" };
-                        let str = "";
-                        str += modeToStr[parts[0]];
-                        str += `+${numToBrand[parts[1]]}`;
-                        str += `+${numToModel[parts[2]]}`;
-                        if (parts[3] === "0") str += `+null`;
-                        else {
-                            const yearNum = Number(parts[3]);
-                            let fullYear = yearNum + (yearNum <= 10 ? 2000 : 1900);
-                            if (yearNum === -1) fullYear = null;
-                            str += `+${fullYear}`;
-                        }
-                        if (parts[4] === "0") str += `+null`;
-                        else str += `+${numToColor[parts[4]]}`;
-                        if (parts[5] === "0") str += `+null`;
-                        else str += `+${numToType[parts[5]]}`;
-                        return str.toLowerCase().replace(/ /g, "_");
-                    }
-                    for (const mkey in minified) {
-                        if (minified.hasOwnProperty(mkey)) {
-                            const key = restoreID(mkey);
-                            const parts = minified[mkey].split("+");
+    if (fetchedData && fetchedData?.data?.str) {
+        const decompressed = LZString.decompressFromEncodedURIComponent(fetchedData.data.str.slice(1));
+        window.location.hash = "";
+        if (decompressed) {
+            const parsed = JSON.parse(decompressed);
 
-                            const name = `${numToBrand[parts[0]]} ${numToModel[parts[1]]}`;
-                            const brand = numToBrand[parts[0]];
-                            const model = numToModel[parts[1]];
-                            const year = parts[2] === "-1" ? null : Number(parts[2]) + (Number(parts[2]) <= 10 ? 2000 : 1900);
-                            const color = numToColor[parts[3]];
-                            const type = numToType[parts[4]];
-                            const owned = parts[5] === "1" ? true : false;
-                            restored[key] = { name, model, brand, year, color, type, owned };
-                        }
-                    }
-                    return restored;
-                }
-                //console.log("Decompressed shared data:", parsed);
-                slots = {
-                    model: restoreData(parsed.slots["0"]),
-                    year: restoreData(parsed.slots["1"]),
-                    color: restoreData(parsed.slots["2"]),
-                    type: restoreData(parsed.slots["3"]),
-                    inventory: slots.inventory,
-                };
-                renderSlots(slots["model"], TROPHY_GRID, 1, PAGE_SIZE, PAGINATION_CONTROLS, slots, trophyInventory);
-            }
+            slots = {
+                model: decompressTrophySlotsObject(parsed.slots["0"]),
+                year: decompressTrophySlotsObject(parsed.slots["1"]),
+                color: decompressTrophySlotsObject(parsed.slots["2"]),
+                type: decompressTrophySlotsObject(parsed.slots["3"]),
+                inventory: slots.inventory,
+            };
+            console.log("Decompressed data:", slots);
+            unlockInteraction();
+            renderSlots(slots["model"], TROPHY_GRID, 1, PAGE_SIZE, PAGINATION_CONTROLS, slots, trophyInventory);
         }
-    });
+    } else {
+        loadFromLocal();
+        alert("Failed to load shared data. The link may be invalid or the data has been removed.");
+    }
 } else {
-    console.info("No shareable link hash found in URL.");
+    loadFromLocal();
 }
 
-const savedData = loadFromLocalStorage("internalSaveData");
-if (validateInternalSaveData(savedData, VERSION)) {
-    console.info(savedData);
-    slots = savedData.slots;
-    trophyInventory = savedData.trophyInventory;
-    console.info("Loaded saved data from localStorage.");
-} else {
-    VALID_MODES.forEach((m) => {
-        slots[m] = generateAllTrophySlots(m, trophyInventory);
-    });
-    console.warn("No valid saved data found in localStorage.");
-}
-
-renderSlots(slots[mode], TROPHY_GRID, 1, PAGE_SIZE, PAGINATION_CONTROLS, slots, trophyInventory);
 updateTrophyProgress(slots, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
 disableDrag(document.querySelectorAll("*"));

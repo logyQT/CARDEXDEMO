@@ -576,3 +576,13 @@ input.hidden {
     font-size: 1rem;
     font-weight: 600;
 }
+#interaction-lock {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: none;
+    z-index: 10000;
+    overflow: hidden;
+}

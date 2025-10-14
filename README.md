@@ -55,3 +55,8 @@ Thanks also to **duckobread**, the community manager, for approving the release 
 -   You can now swap out collected trophies.
 -   You can now share your collection via a link.
 -   **KNOWN BUG** - cannot slot or change trophies when in search mode.
+
+### 2.0.3
+
+-   Changed how some interaction work, regarding sharing the CarDex.
+-   Fixed some issues regarding sharing collections.
