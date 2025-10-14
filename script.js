@@ -18,6 +18,7 @@ import {
     updateOverallTrophyProgress,
     autoFillTrophySlots,
     renderSlots,
+    smartSearch,
 } from "./modules/index.js";
 
 import {
@@ -41,7 +42,6 @@ import {
 } from "./utils/domRefs.js";
 
 import { GAME_VERSION, VERSION, PAGE_SIZE, VALID_MODES } from "./utils/constants.js";
-import { smartSearch } from "./modules/search.js";
 import { CONFIG } from "./config/config.js";
 import { lockInteraction, unlockInteraction } from "./utils/interactionLock.js";
 
@@ -175,21 +175,21 @@ SEARCH_BAR.addEventListener("input", (event) => {
 VERSION_TEXT.innerText = `v${VERSION} (game ver. ${GAME_VERSION})`;
 IMPORT_SAVE_FILE_BUTTON.addEventListener("change", (event) => read_save(event.target));
 
-import { compressTrophySlotsObject, decompressTrophySlotsObject } from "./utils/compressionUtils.js";
+import { compressTrophySlots, decompressTrophySlots } from "./utils/compressionUtils.js";
 
 SHARE_BUTTON.addEventListener("click", async () => {
     lockInteraction();
     async function generateCardexUrl(slots) {
         const json = {
             slots: {
-                0: compressTrophySlotsObject(slots.model),
-                1: compressTrophySlotsObject(slots.year),
-                2: compressTrophySlotsObject(slots.color),
-                3: compressTrophySlotsObject(slots.type),
+                0: compressTrophySlots(slots.model),
+                1: compressTrophySlots(slots.year),
+                2: compressTrophySlots(slots.color),
+                3: compressTrophySlots(slots.type),
             },
             v: VERSION,
         };
-        console.log("Compressed data:", json);
+        //console.log("Compressed data:", json);
         const jsonStr = JSON.stringify(json);
         const compressed = LZString.compressToEncodedURIComponent(jsonStr);
         const saveStr = `#${compressed}`;
@@ -289,19 +289,23 @@ if (window.location.hash && window.location.hash.length > 1) {
     if (fetchedData && fetchedData?.data?.str) {
         const decompressed = LZString.decompressFromEncodedURIComponent(fetchedData.data.str.slice(1));
         window.location.hash = "";
-        if (decompressed) {
+        if (JSON.parse(decompressed).v === VERSION) {
             const parsed = JSON.parse(decompressed);
 
             slots = {
-                model: decompressTrophySlotsObject(parsed.slots["0"]),
-                year: decompressTrophySlotsObject(parsed.slots["1"]),
-                color: decompressTrophySlotsObject(parsed.slots["2"]),
-                type: decompressTrophySlotsObject(parsed.slots["3"]),
+                model: decompressTrophySlots(parsed.slots["0"]),
+                year: decompressTrophySlots(parsed.slots["1"]),
+                color: decompressTrophySlots(parsed.slots["2"]),
+                type: decompressTrophySlots(parsed.slots["3"]),
                 inventory: slots.inventory,
             };
-            console.log("Decompressed data:", slots);
+            //console.log("Decompressed data:", slots);
             unlockInteraction();
             renderSlots(slots["model"], TROPHY_GRID, 1, PAGE_SIZE, PAGINATION_CONTROLS, slots, trophyInventory);
+        } else {
+            unlockInteraction();
+            loadFromLocal();
+            alert("The shared data version is incompatible with the current app version.");
         }
     } else {
         loadFromLocal();

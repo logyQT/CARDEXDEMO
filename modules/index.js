@@ -22,7 +22,6 @@ export * from "./getAllTrophies.js";
 export * from "./parseTrophyString.js";
 export * from "./autoFillTrophySlots.js";
 export * from "./matchBestTrophy.js";
-export * from "./filterTrophies.js";
 export * from "./search.js";
 export * from "./renderSlots.js";
 export * from "./displayModal.js";

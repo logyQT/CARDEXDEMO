@@ -42,8 +42,7 @@ const decompressID = (id) => {
 
 export { compressID, decompressID };
 
-const compressTrophySlotsObject = (obj) => {
-    console.log("Compressing trophy slots object:", obj);
+const compressTrophySlots = (obj) => {
     const minified = {};
     for (const key in obj) {
         if (obj.hasOwnProperty(key)) {
@@ -63,7 +62,7 @@ const compressTrophySlotsObject = (obj) => {
     return minified;
 };
 
-const decompressTrophySlotsObject = (minified) => {
+const decompressTrophySlots = (minified) => {
     const restored = {};
     for (const mkey in minified) {
         if (minified.hasOwnProperty(mkey)) {
@@ -84,4 +83,4 @@ const decompressTrophySlotsObject = (minified) => {
     return restored;
 };
 
-export { compressTrophySlotsObject, decompressTrophySlotsObject };
+export { compressTrophySlots, decompressTrophySlots };

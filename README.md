@@ -60,3 +60,7 @@ Thanks also to **duckobread**, the community manager, for approving the release 
 
 -   Changed how some interaction work, regarding sharing the CarDex.
 -   Fixed some issues regarding sharing collections.
+
+### 2.0.4
+
+-   Fixed an issue where trophies couldn’t be slotted while in search mode, even though no UI errors were displayed.

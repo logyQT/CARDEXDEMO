@@ -83,16 +83,23 @@ const matchesYear = (trophy, yearExprs) => {
     });
 };
 
-const filterTrophies = (trophies, criteria) => {
-    return trophies.filter((trophy) =>
-        Object.entries(criteria).every(([key, values]) => {
-            if (key === "year") return matchesYear(trophy, values);
-            if (key === "owned") return values.includes(trophy.owned);
+const filterTrophies = (trophies = {}, criteria = {}) => {
+    if (typeof trophies !== "object" || trophies === null) return {};
 
-            const field = trophy[key];
-            if (field == null) return false;
-            return values.some((val) => String(field).toLowerCase().includes(String(val).toLowerCase()));
-        })
+    return Object.fromEntries(
+        Object.entries(trophies).filter(([id, trophy]) =>
+            Object.entries(criteria).every(([key, values]) => {
+                if (!Array.isArray(values)) return true;
+
+                if (key === "year") return matchesYear?.(trophy, values);
+                if (key === "owned") return values.includes(Boolean(trophy.owned));
+
+                const field = trophy[key];
+                if (field == null) return false;
+
+                return values.some((val) => String(field).toLowerCase().includes(String(val).toLowerCase()));
+            })
+        )
     );
 };
 
@@ -100,9 +107,7 @@ const smartSearch = (searchString, trophies, db = wordDatabase) => {
     const tokens = parseSearchString(searchString);
     const criteria = buildCriteria(tokens, db);
 
-    const dataArray = Array.isArray(trophies) ? trophies : Object.values(trophies);
-
-    return filterTrophies(dataArray, criteria);
+    return filterTrophies(trophies, criteria);
 };
 
-export { smartSearch };
+export { smartSearch, filterTrophies };
