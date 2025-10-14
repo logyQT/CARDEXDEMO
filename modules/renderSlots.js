@@ -11,6 +11,7 @@ import { VERSION, COLOR_LOOKUP } from "../utils/constants.js";
 const renderSlots = (slots, container, currentPage, PAGE_SIZE, PAGINATION_CONTROLS, allSlots, trophyInventory) => {
     if (!slots || typeof slots !== "object") {
         container.innerHTML = "<p style='color: white; text-align: center; grid-column: span 6;'>No trophies in inventory. Add some using the random trophy button or by loading a save file.</p>";
+        renderPaginationControls(PAGINATION_CONTROLS, 1, 1, () => {});
         return;
     }
     container.innerHTML = "";
