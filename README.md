@@ -12,9 +12,10 @@ This project is an independent creation and is not affiliated with, endorsed by,
 
 ## How to Use
 
-- Earn trophies by clicking the **Random Trophy** button or uploading a `.hrs` save file from `%localappdata%/CarDealerSimulator/Saved`.
+- Earn trophies by uploading a `.hrs` save file from `%localappdata%/CarDealerSimulator/Saved`.
 - Slot a trophy by clicking any empty slot.
 - Progress is saved instantly and stored in your browser’s local storage.
+- You can share your progress via link with the SHARE button.
 
 ## Potential Features
 
@@ -54,7 +55,7 @@ Thanks also to **duckobread**, the community manager, for approving the release 
 - Added a search bar.
 - You can now swap out collected trophies.
 - You can now share your collection via a link.
-- **KNOWN BUG** - cannot slot or change trophies when in search mode.
+- ~~**KNOWN BUG** - cannot slot or change trophies when in search mode.~~ **FIXED** in 2.0.4
 
 ### 2.0.3
 
@@ -68,4 +69,4 @@ Thanks also to **duckobread**, the community manager, for approving the release 
 ### 2.0.5
 
 - Added the **Aurora Outrider** trophy.
-- Removed the Random Trophy Button.
+- Removed the Random Trophy button, which was originally intended for debugging.
