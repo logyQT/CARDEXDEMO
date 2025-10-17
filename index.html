@@ -1,102 +1,102 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <title>CDS - CarDex</title>
-        <link href="./style.css" rel="stylesheet" />
-        <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.5.0/sql-wasm.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
-        <script src="./script.js" defer type="module"></script>
-    </head>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>CDS - CarDex</title>
+    <link href="./style.css" rel="stylesheet" />
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.5.0/sql-wasm.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
+    <script src="./script.js" defer type="module"></script>
+  </head>
 
-    <body>
-        <div class="container">
-            <div class="app">
-                <div class="sidebar">
-                    <div class="controls">
-                        <input class="search-bar" id="search-bar" placeholder="ex. Striker gold >1990" type="search" />
-                        <!-- <div class="sorting-options">
+  <body>
+    <div class="container">
+      <div class="app">
+        <div class="sidebar">
+          <div class="controls">
+            <input class="search-bar" id="search-bar" placeholder="ex. Striker gold >1990" type="search" />
+            <!-- <div class="sorting-options">
                             <div class="sort-state-button" data-sort="brand" data-state="0">B</div>
                             <div class="sort-state-button" data-sort="model" data-state="0">M</div>
                             <div class="sort-state-button" data-sort="year" data-state="0">Y</div>
                             <div class="sort-state-button" data-sort="color" data-state="0">C</div>
                             <div class="sort-state-button" data-sort="type" data-state="0">T</div>
                         </div> -->
-                    </div>
-                    <div class="tabs">
-                        <div class="category">
-                            CARDEX
-                            <div class="sub">
-                                <div class="tab active" data-mode="model">MODEL</div>
-                                <div class="tab" data-mode="year">YEAR</div>
-                                <div class="tab" data-mode="color">COLOR</div>
-                                <div class="tab" data-mode="type">TROPHY TYPE</div>
-                            </div>
-                        </div>
-
-                        <div class="category">
-                            ACTIONS
-                            <div class="sub">
-                                <div id="view-inventory-btn" class="tab" data-mode="inventory">INVENTORY</div>
-                                <div id="add-random-trophy-btn" class="tab">RANDOM TROPHY</div>
-                                <div id="auto-fill-btn" class="tab">AUTOFILL</div>
-                            </div>
-                        </div>
-
-                        <div class="category">
-                            IMPORT/EXPORT
-                            <div class="sub">
-                                <label for="import-save-file-input" id="mediaInputLabel" class="tab">LOAD .HRS FILE</label>
-                                <input type="file" id="import-save-file-input" accept=".hrs" class="hidden" />
-                                <div id="share-btn" class="tab">SHARE</div>
-                                <div id="download-save-btn" class="tab">DOWNLOAD JSON</div>
-                                <label for="upload-save-btn" id="jsonUploadLabel" class="tab">LOAD JSON</label>
-                                <input type="file" id="upload-save-btn" accept=".json" class="hidden" />
-                                <div id="reset-save-btn" class="tab">RESET SAVE DATA</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="main">
-                    <div class="top-bar">
-                        <div class="progress-wrapper">
-                            <div class="small" id="progress-text">CarDex Completion: <strong id="progress-text-value">0%</strong></div>
-                            <div class="bar">
-                                <i id="progress-bar"> </i>
-                            </div>
-                        </div>
-                        <div id="grid-pagination-controls" class="pagination-controls"></div>
-                    </div>
-
-                    <div class="grid" id="trophy-grid"></div>
-                </div>
+          </div>
+          <div class="tabs">
+            <div class="category">
+              CARDEX
+              <div class="sub">
+                <div class="tab active" data-mode="model">MODEL</div>
+                <div class="tab" data-mode="year">YEAR</div>
+                <div class="tab" data-mode="color">COLOR</div>
+                <div class="tab" data-mode="type">TROPHY TYPE</div>
+              </div>
             </div>
-        </div>
-        <div id="interaction-lock"></div>
-        <footer class="footer">
-            <div>CarDex Demo <i id="version-number"></i> &middot; Developed by logy80 &middot; <a href="https://github.com/logyQT/CARDEXDEMO" class="muted" style="text-decoration: none">GitHub</a> &middot; Big thanks to <strong>.faulty.</strong> for sharing mapping data and game assets.</div>
-            <p>This project is not affiliated with, endorsed by, or associated with the developers or publishers of Car Dealer Simulator.</p>
-            <p>All trademarks and copyrights remain the property of their respective owners.</p>
-        </footer>
-        <div id="share-link-container" class="hidden">
-            <div id="share-link-box">
-                <span id="share-link-text">Shareable Link:</span>
-                <input type="text" id="share-link-input" readonly />
-                <button id="copy-share-link-btn">Copy</button>
-                <button id="close-share-link-btn">Close</button>
+
+            <div class="category">
+              ACTIONS
+              <div class="sub">
+                <div id="view-inventory-btn" class="tab" data-mode="inventory">INVENTORY</div>
+                <div id="add-random-trophy-btn" class="tab">RANDOM TROPHY</div>
+                <div id="auto-fill-btn" class="tab">AUTOFILL</div>
+                <div id="share-btn" class="tab">SHARE</div>
+              </div>
             </div>
-        </div>
-        <div id="slot-trophy-modal" class="modal">
-            <div id="slot-trophy-content" class="modal-content">
-                <div class="modal-header">
-                    <h2 id="slot-trophy-title">Slot Trophy</h2>
-                    <div id="modal-pagination-controls" class="pagination-controls"></div>
-                </div>
-                <div id="modal-grid" class="modal-grid">No trophies yet.</div>
+
+            <div class="category">
+              IMPORT/EXPORT
+              <div class="sub">
+                <label for="import-save-file-input" id="mediaInputLabel" class="tab">LOAD .HRS FILE</label>
+                <input type="file" id="import-save-file-input" accept=".hrs" class="hidden" />
+                <div id="download-save-btn" class="tab">DOWNLOAD JSON</div>
+                <label for="upload-save-btn" id="jsonUploadLabel" class="tab">LOAD JSON</label>
+                <input type="file" id="upload-save-btn" accept=".json" class="hidden" />
+                <div id="reset-save-btn" class="tab">RESET SAVE DATA</div>
+              </div>
             </div>
+          </div>
         </div>
-    </body>
+
+        <div class="main">
+          <div class="top-bar">
+            <div class="progress-wrapper">
+              <div class="small" id="progress-text">CarDex Completion: <strong id="progress-text-value">0%</strong></div>
+              <div class="bar">
+                <i id="progress-bar"> </i>
+              </div>
+            </div>
+            <div id="grid-pagination-controls" class="pagination-controls"></div>
+          </div>
+
+          <div class="grid" id="trophy-grid"></div>
+        </div>
+      </div>
+    </div>
+    <div id="interaction-lock"></div>
+    <footer class="footer">
+      <div>CarDex Demo <i id="version-number"></i> &middot; Developed by logy80 &middot; <a href="https://github.com/logyQT/CARDEXDEMO" class="muted" style="text-decoration: none">GitHub</a> &middot; Big thanks to <strong>.faulty.</strong> for sharing mapping data and game assets.</div>
+      <p>This project is not affiliated with, endorsed by, or associated with the developers or publishers of Car Dealer Simulator.</p>
+      <p>All trademarks and copyrights remain the property of their respective owners.</p>
+    </footer>
+    <div id="share-link-container" class="hidden">
+      <div id="share-link-box">
+        <span id="share-link-text">Shareable Link:</span>
+        <input type="text" id="share-link-input" readonly />
+        <button id="copy-share-link-btn">Copy</button>
+        <button id="close-share-link-btn">Close</button>
+      </div>
+    </div>
+    <div id="slot-trophy-modal" class="modal">
+      <div id="slot-trophy-content" class="modal-content">
+        <div class="modal-header">
+          <h2 id="slot-trophy-title">Slot Trophy</h2>
+          <div id="modal-pagination-controls" class="pagination-controls"></div>
+        </div>
+        <div id="modal-grid" class="modal-grid">No trophies yet.</div>
+      </div>
+    </div>
+  </body>
 </html>

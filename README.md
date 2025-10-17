@@ -12,18 +12,18 @@ This project is an independent creation and is not affiliated with, endorsed by,
 
 ## How to Use
 
--   Earn trophies by clicking the **Random Trophy** button or uploading a `.hrs` save file from `%localappdata%/CarDealerSimulator/Saved`.
--   Slot a trophy by clicking any empty slot.
--   Progress is saved instantly and stored in your browser’s local storage.
+- Earn trophies by clicking the **Random Trophy** button or uploading a `.hrs` save file from `%localappdata%/CarDealerSimulator/Saved`.
+- Slot a trophy by clicking any empty slot.
+- Progress is saved instantly and stored in your browser’s local storage.
 
 ## Potential Features
 
 Possible future enhancements include:
 
--   **Rewards:** Unlock cosmetic upgrades or new gameplay features as you progress.
--   ~~**Search:** Locate specific cars quickly using a search bar.~~ Has been implemented in 2.0.2 release.
--   **Sorting:** Arrange the trophy index by name, type, or other criteria.
--   ~~**Filtering:** Display only missing or owned cars to easily track your collection.~~ Implemented by the search bar - you can search for missing / owned cars as of 2.0.2 release.
+- **Rewards:** Unlock cosmetic upgrades or new gameplay features as you progress.
+- ~~**Search:** Locate specific cars quickly using a search bar.~~ Has been implemented in 2.0.2 release.
+- **Sorting:** Arrange the trophy index by name, type, or other criteria.
+- ~~**Filtering:** Display only missing or owned cars to easily track your collection.~~ Implemented by the search bar - you can search for missing / owned cars as of 2.0.2 release.
 
 Even if no further features are added, this demo serves as a reference for anyone interested in similar mechanics.
 
@@ -43,24 +43,29 @@ Thanks also to **duckobread**, the community manager, for approving the release 
 
 ### 2.0.1
 
--   Added the **Phantom ThunderX** trophy.
--   Fixed issues with importing JSON files.
--   Improved trophy retrieval from save files by checking the player inventory.
--   Introduced an **Autofill** button to quickly fill all trophy slots.
+- Added the **Phantom ThunderX** trophy.
+- Fixed issues with importing JSON files.
+- Improved trophy retrieval from save files by checking the player inventory.
+- Introduced an **Autofill** button to quickly fill all trophy slots.
 
 ### 2.0.2
 
--   Now detects trophies left in the game world.
--   Added a search bar.
--   You can now swap out collected trophies.
--   You can now share your collection via a link.
--   **KNOWN BUG** - cannot slot or change trophies when in search mode.
+- Now detects trophies left in the game world.
+- Added a search bar.
+- You can now swap out collected trophies.
+- You can now share your collection via a link.
+- **KNOWN BUG** - cannot slot or change trophies when in search mode.
 
 ### 2.0.3
 
--   Changed how some interaction work, regarding sharing the CarDex.
--   Fixed some issues regarding sharing collections.
+- Changed how some interaction work, regarding sharing the CarDex.
+- Fixed some issues regarding sharing collections.
 
 ### 2.0.4
 
--   Fixed an issue where trophies couldn’t be slotted while in search mode, even though no UI errors were displayed.
+- Fixed an issue where trophies couldn’t be slotted while in search mode, even though no UI errors were displayed.
+
+### 2.0.5
+
+- Added the **Aurora Outrider** trophy.
+- Removed the Random Trophy Button.
