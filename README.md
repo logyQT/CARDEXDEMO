@@ -70,3 +70,8 @@ Thanks also to **duckobread**, the community manager, for approving the release 
 
 - Added the **Aurora Outrider** trophy.
 - Removed the Random Trophy button, which was originally intended for debugging.
+
+### 2.0.6
+
+- Added full image preloading for a smoother experience, especially on slower connections.
+- Optimized assets for the web - all images now use the modern WebP format, reducing file size and network usage by up to 5×.

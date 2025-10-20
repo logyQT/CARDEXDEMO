@@ -26,7 +26,6 @@ const E_CarModel = {
   NewEnumerator10: "Thunder",
   NewEnumerator11: "P3",
   NewEnumerator12: "P4",
-  NewEnumerator13: "Truck",
   NewEnumerator14: "280G",
   NewEnumerator15: "Gale",
   NewEnumerator16: "Cortega",

@@ -6,9 +6,9 @@
  */
 
 const filterTrophies = (trophies, criteria) => {
-    return trophies.filter((trophy) => {
-        return Object.entries(criteria).every(([key, value]) => trophy[key] === value);
-    });
+  return trophies.filter((trophy) => {
+    return Object.entries(criteria).every(([key, value]) => trophy[key] === value);
+  });
 };
 
 export { filterTrophies };

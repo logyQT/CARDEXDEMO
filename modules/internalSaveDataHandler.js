@@ -14,12 +14,12 @@
  * @returns {SaveDataRoot} Internal save data object
  */
 const createInternalSaveData = (versionNumber, slots, trophyInventory) => {
-    return {
-        version: versionNumber,
-        timestamp: Date.now(),
-        slots: slots,
-        trophyInventory: trophyInventory,
-    };
+  return {
+    version: versionNumber,
+    timestamp: Date.now(),
+    slots: slots,
+    trophyInventory: trophyInventory,
+  };
 };
 
 /**
@@ -28,34 +28,34 @@ const createInternalSaveData = (versionNumber, slots, trophyInventory) => {
  * @returns
  */
 const readInternalSaveData = (data) => {
-    if (!data || typeof data !== "object") {
-        console.error("Invalid data format");
-        return null;
-    }
-    const { version, timestamp, slots, trophyInventory } = data;
-    if (typeof version !== "string" || typeof timestamp !== "number" || typeof slots !== "object" || !Array.isArray(trophyInventory)) {
-        console.error("Missing or invalid fields in data");
-        return null;
-    }
-    return {
-        version,
-        timestamp,
-        slots,
-        trophyInventory,
-    };
+  if (!data || typeof data !== "object") {
+    console.error("Invalid data format");
+    return null;
+  }
+  const { version, timestamp, slots, trophyInventory } = data;
+  if (typeof version !== "string" || typeof timestamp !== "number" || typeof slots !== "object" || !Array.isArray(trophyInventory)) {
+    console.error("Missing or invalid fields in data");
+    return null;
+  }
+  return {
+    version,
+    timestamp,
+    slots,
+    trophyInventory,
+  };
 };
 
 const validateInternalSaveData = (data, ver) => {
-    if (!data || typeof data !== "object") {
-        return false;
-    }
+  if (!data || typeof data !== "object") {
+    return false;
+  }
 
-    const { version, timestamp, slots, trophyInventory } = data;
-    if (typeof version !== "string" || typeof timestamp !== "number" || typeof slots !== "object" || !Array.isArray(trophyInventory)) {
-        return false;
-    }
+  const { version, timestamp, slots, trophyInventory } = data;
+  if (typeof version !== "string" || typeof timestamp !== "number" || typeof slots !== "object" || !Array.isArray(trophyInventory)) {
+    return false;
+  }
 
-    return ver === version;
+  return ver === version;
 };
 
 export { createInternalSaveData, readInternalSaveData, validateInternalSaveData };

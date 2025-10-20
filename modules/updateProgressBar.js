@@ -6,8 +6,8 @@
  * @param {HTMLElement} barFillEl - Element to set width for bar fill.
  */
 const updateProgressBar = (owned, total, percentEl, barFillEl) => {
-    const pct = total === 0 ? 0 : Math.round((owned / total) * 100);
-    percentEl.textContent = `${pct}% (${owned}/${total})`;
-    barFillEl.style.width = pct + "%";
+  const pct = total === 0 ? 0 : Math.round((owned / total) * 100);
+  percentEl.textContent = `${pct}% (${owned}/${total})`;
+  barFillEl.style.width = pct + "%";
 };
 export { updateProgressBar };

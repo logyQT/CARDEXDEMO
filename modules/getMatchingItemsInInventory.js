@@ -5,8 +5,8 @@
  */
 
 const getMatchingItemsInInventory = (inventorySource, productId) => {
-    let items = inventorySource?.ItemContainer?.Items?.itemsJsons || [];
-    items = items.filter((item) => item.productId === productId);
-    return items;
+  let items = inventorySource?.ItemContainer?.Items?.itemsJsons || [];
+  items = items.filter((item) => item.productId === productId);
+  return items;
 };
 export { getMatchingItemsInInventory };

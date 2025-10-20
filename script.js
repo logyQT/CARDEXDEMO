@@ -1,10 +1,9 @@
 import { createInternalSaveData, getPaginationInfo, sortTrophies, generateRandomTrophy, getSaveObject, getDatabase, disableDrag, generateAllTrophySlots, saveToLocalStorage, loadFromLocalStorage, validateInternalSaveData, removeFromLocalStorage, exportToJSON, importFromJSON, updateTrophyProgress, getAllTrophies, updateOverallTrophyProgress, autoFillTrophySlots, renderSlots, smartSearch } from "./modules/index.js";
-
 import { SHARE_BUTTON, IMPORT_SAVE_FILE_BUTTON, PROGRESS_BAR, PROGRESS_BAR_TEXT, PAGINATION_CONTROLS, VERSION_TEXT, RESET_BUTTON, IMPORT_JSON_BUTTON, DOWNLOAD_JSON_BUTTON, TROPHY_AUTOFILL_BUTTON, ADD_TROPHY_BUTTON, SEARCH_BAR, TROPHY_GRID, COPY_SHARE_LINK_BUTTON, CLOSE_SHARE_LINK_BUTTON, SHARE_LINK_CONTAINER, SHARE_LINK_INPUT } from "./utils/domRefs.js";
-
 import { GAME_VERSION, VERSION, PAGE_SIZE, VALID_MODES } from "./utils/constants.js";
 import { CONFIG } from "./config/config.js";
 import { lockInteraction, unlockInteraction } from "./utils/interactionLock.js";
+import { trophyImageManager } from "./utils/trophyImageManager.js";
 
 /**
  * @type {import("./utils/types.js").SaveObjectRoot}
@@ -288,3 +287,6 @@ if (window.location.hash && window.location.hash.length > 1) {
 
 updateTrophyProgress(slots, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
 disableDrag(document.querySelectorAll("*"));
+
+trophyImageManager.registerAll();
+await trophyImageManager.preloadAll();

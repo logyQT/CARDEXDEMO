@@ -1,75 +1,102 @@
-import { sortTrophies, saveToLocalStorage, renderPaginationControls, getTrophyImage, displayModal, animateCards, disableDrag, createInternalSaveData, getMatchingTrophies } from "./index.js";
+import { sortTrophies, saveToLocalStorage, renderPaginationControls, displayModal, animateCards, disableDrag, createInternalSaveData, getMatchingTrophies } from "./index.js";
 import { VERSION, COLOR_LOOKUP } from "../utils/constants.js";
-/**
- *
- * @param {Object<string, Object>} slots
- * @param {*} container
- * @param {*} currentPage
- * @param {*} itemsPerPage
- * @param {*} PAGINATION_CONTROLS
- */
-const renderSlots = (slots, container, currentPage, PAGE_SIZE, PAGINATION_CONTROLS, allSlots, trophyInventory) => {
-    if (!slots || typeof slots !== "object") {
-        container.innerHTML = "<p style='color: white; text-align: center; grid-column: span 6;'>No trophies in inventory. Add some using the random trophy button or by loading a save file.</p>";
-        renderPaginationControls(PAGINATION_CONTROLS, 1, 1, () => {});
-        return;
-    }
-    container.innerHTML = "";
-    let slotIDs = Object.keys(slots);
-    let totalPages = Math.ceil(slotIDs.length / PAGE_SIZE) || 1;
-    if (currentPage > totalPages) currentPage = totalPages;
-    const startIdx = (currentPage - 1) * PAGE_SIZE;
-    const endIdx = startIdx + PAGE_SIZE;
-    const pageSlots = slotIDs.slice(startIdx, endIdx);
+import { trophyImageManager } from "../utils/trophyImageManager.js";
 
-    pageSlots.forEach((slotID) => {
-        const slot = slots[slotID];
-        const card = document.createElement("div");
-        card.className = slot.owned ? "trophy-slot owned-true" : "trophy-slot owned-false";
-        if (slot.owned) card.style.setProperty("--color", COLOR_LOOKUP[slot.type]);
-        card.setAttribute("title", slot.owned ? "Owned - Click to change displayed trophy" : "Not Owned - Click to view matching trophies you can claim");
-        if (slot.mode === "inventory") card.removeAttribute("title");
-        card.setAttribute("data-owned", slot.owned);
-        card.setAttribute("data-slot-id", slotID);
+let currentRenderToken = 0; // prevents race conditions between pages
 
-        const imgColor = slot.color ? slot.color : "Black";
-        const imgType = slot.type ? slot.type : "Common";
-        const imgSrc = getTrophyImage(slot.brand, slot.model, imgColor, imgType);
+const renderSlots = async (slots, container, currentPage, PAGE_SIZE, PAGINATION_CONTROLS, allSlots, trophyInventory) => {
+  const myToken = ++currentRenderToken;
 
-        const shortYear = slot.year ? `'${String(slot.year).slice(-2)}` : "";
-        card.innerHTML = `
-            <div class="trophy-slot-inner-wrapper">
-                <img src="${imgSrc}" alt="${imgColor} ${imgType}" class="trophy-slot-img">
-                <div class="trophy-slot-overlay">
-                    <div class="trophy-slot-text">
-                        <b>${shortYear} ${slot.name}</b><br>
-                    </div>
-                </div>
-            </div>
-        `;
+  if (!slots || typeof slots !== "object") {
+    container.innerHTML = "<p style='color: white; text-align: center; grid-column: span 6;'>No trophies in inventory. Add some using the random trophy button or by loading a save file.</p>";
+    renderPaginationControls(PAGINATION_CONTROLS, 1, 1, () => {});
+    return;
+  }
 
-        container.appendChild(card);
+  container.innerHTML = "";
+
+  const slotIDs = Object.keys(slots);
+  const totalPages = Math.ceil(slotIDs.length / PAGE_SIZE) || 1;
+  if (currentPage > totalPages) currentPage = totalPages;
+
+  const startIdx = (currentPage - 1) * PAGE_SIZE;
+  const endIdx = startIdx + PAGE_SIZE;
+  const pageSlots = slotIDs.slice(startIdx, endIdx);
+
+  // render all cards instantly (with placeholders)
+  const cardElements = pageSlots.map((slotID) => {
+    const slot = slots[slotID];
+    const card = document.createElement("div");
+    card.className = slot.owned ? "trophy-slot owned-true" : "trophy-slot owned-false";
+    if (slot.owned) card.style.setProperty("--color", COLOR_LOOKUP[slot.type]);
+    card.setAttribute("data-owned", slot.owned);
+    card.setAttribute("data-slot-id", slotID);
+    if (slot.mode !== "inventory") card.setAttribute("title", slot.owned ? "Owned - Click to change displayed trophy" : "Not Owned - Click to view matching trophies you can claim");
+
+    const cardInnerWrapper = document.createElement("div");
+    cardInnerWrapper.className = "trophy-slot-inner-wrapper";
+
+    // Placeholder first
+    const placeholder = document.createElement("img");
+    placeholder.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIW2P4DwQMBAADdQFcbW1XjAAAAABJRU5ErkJggg==";
+    placeholder.className = "trophy-slot-img placeholder";
+    placeholder.alt = "Loading...";
+    cardInnerWrapper.appendChild(placeholder);
+
+    // Overlay text
+    const cardOverlay = document.createElement("div");
+    cardOverlay.className = "trophy-slot-overlay";
+    const cardText = document.createElement("div");
+    cardText.className = "trophy-slot-text";
+    const shortYear = slot.year ? `'${String(slot.year).slice(-2)}` : "";
+    cardText.innerHTML = `<b>${shortYear} ${slot.name}</b><br>`;
+    cardOverlay.appendChild(cardText);
+    cardInnerWrapper.appendChild(cardOverlay);
+    card.appendChild(cardInnerWrapper);
+
+    // queue async image load but don't block render
+    const imgColor = slot.color ?? "Black";
+    const imgType = slot.type ?? "Common";
+
+    trophyImageManager.getImage(slot.brand, slot.model, imgColor, imgType).then((image) => {
+      // if page changed before load finished, skip
+      if (myToken !== currentRenderToken || !image) return;
+
+      const loadedImg = image.cloneNode();
+      loadedImg.className = "trophy-slot-img";
+      loadedImg.alt = `${imgColor} ${imgType}`;
+
+      cardInnerWrapper.replaceChild(loadedImg, placeholder);
     });
 
-    renderPaginationControls(PAGINATION_CONTROLS, currentPage, totalPages, (newPage) => {
-        renderSlots(slots, container, newPage, PAGE_SIZE, PAGINATION_CONTROLS, allSlots, trophyInventory);
+    return card;
+  });
+
+  // bail early if outdated
+  if (myToken !== currentRenderToken) return;
+
+  // add cards instantly (with placeholders)
+  cardElements.forEach((card) => container.appendChild(card));
+
+  renderPaginationControls(PAGINATION_CONTROLS, currentPage, totalPages, async (newPage) => {
+    await renderSlots(slots, container, newPage, PAGE_SIZE, PAGINATION_CONTROLS, allSlots, trophyInventory);
+  });
+
+  const NEW_TROPHY_ELEMENTS = container.querySelectorAll(".trophy-slot");
+
+  NEW_TROPHY_ELEMENTS.forEach((el) => {
+    const slotID = el.getAttribute("data-slot-id");
+    if (slotID.split("+")[0] === "inventory") return;
+    el.addEventListener("click", () => {
+      displayModal(slots, allSlots, slotID, sortTrophies(getMatchingTrophies(slotID, trophyInventory), ["type", "model", "year", "color"]), trophyInventory, 1);
     });
+  });
 
-    const NEW_TROPHY_ELEMENTS = document.querySelectorAll(".trophy-slot");
+  animateCards(NEW_TROPHY_ELEMENTS);
+  disableDrag(NEW_TROPHY_ELEMENTS);
 
-    NEW_TROPHY_ELEMENTS.forEach((el) => {
-        const slotID = el.getAttribute("data-slot-id");
-        if (slotID.split("+")[0] === "inventory") return; // Skip inventory slots
-        el.addEventListener("click", () => {
-            //console.log(slotID);
-            displayModal(slots, allSlots, slotID, sortTrophies(getMatchingTrophies(slotID, trophyInventory), ["type", "model", "year", "color"]), trophyInventory, 1);
-        });
-    });
-
-    animateCards(NEW_TROPHY_ELEMENTS);
-    disableDrag(NEW_TROPHY_ELEMENTS);
-    const internalSaveData = createInternalSaveData(VERSION, allSlots, trophyInventory);
-    saveToLocalStorage("internalSaveData", internalSaveData);
+  const internalSaveData = createInternalSaveData(VERSION, allSlots, trophyInventory);
+  saveToLocalStorage("internalSaveData", internalSaveData);
 };
 
 export { renderSlots };
