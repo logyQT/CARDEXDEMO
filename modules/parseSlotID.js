@@ -3,7 +3,7 @@ const lookup = {
     apex_motors: "Apex Motors",
     ardena: "Ardena",
     aurora: "Aurora",
-    cargo: "Cargo",
+    cargo_wise: "Cargo Wise",
     cavallaro: "Cavallaro",
     harmonia_vehicles: "Harmonia Vehicles",
     ngd: "NGD",
