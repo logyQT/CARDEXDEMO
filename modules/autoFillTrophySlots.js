@@ -3,15 +3,14 @@ import { matchBestTrophy } from "./index.js";
 const autoFillTrophySlots = (slots, trophyInventory) => {
   for (const mode in slots) {
     if (mode === "inventory") continue;
-    const modeSlots = Object.keys(slots[mode]);
-    modeSlots.forEach((slotID) => {
+    for (const slotID of Object.keys(slots[mode])) {
+      if (slots[mode][slotID].owned) continue;
       const bestTrophy = matchBestTrophy(slots[mode][slotID], trophyInventory, mode);
       if (bestTrophy) {
-        bestTrophy.slotID = slotID;
-        bestTrophy.owned = true;
         slots[mode][slotID] = bestTrophy;
+        slots[mode][slotID].owned = true;
       }
-    });
+    }
   }
   return slots;
 };

@@ -1,7 +1,7 @@
 import { updateProgressBar } from "./index.js";
 
 const updateTrophyProgress = (slots, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR) => {
-  if (mode === "inventory") {
+  if (mode === "inventory" || mode === "stats") {
     updateOverallTrophyProgress(slots, PROGRESS_BAR_TEXT, PROGRESS_BAR);
     return;
   }

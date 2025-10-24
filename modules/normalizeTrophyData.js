@@ -12,7 +12,6 @@ const normalizeTrophyData = (trophy) => {
     color: E_VehiclePaintColor[trophy.paintColor] || E_VehiclePaintColor["NewEnumerator0"],
     type: E_TrophyType[trophy.trophyType] || E_TrophyType["NewEnumerator0"],
     year: parseInt(trophy.productionYear) || 0,
-    owned: true,
   };
 };
 export { normalizeTrophyData };

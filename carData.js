@@ -20,6 +20,7 @@ const carData = [
   { name: "Phantom ThunderX", prodStart: 2000, prodEnd: 2010, brand: "Phantom", model: "ThunderX" },
   { name: "Phantom Voyager", prodStart: 1982, prodEnd: 1991, brand: "Phantom", model: "Voyager" },
   { name: "UMX 600C", prodStart: 1980, prodEnd: 1989, brand: "UMX", model: "600C" },
+  { name: "UMX 800C", prodStart: 2000, prodEnd: 2010, brand: "UMX", model: "800C" },
   { name: "Zen Motors Journey", prodStart: 1998, prodEnd: 2006, brand: "Zen Motors", model: "Journey" },
 ];
 

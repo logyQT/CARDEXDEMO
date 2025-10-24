@@ -86,7 +86,7 @@ const displayModal = (slots, allSlots, slotID, matches, trophyInventory, current
     const cardText = document.createElement("div");
     cardText.className = "trophy-slot-text";
     const shortYear = trophy.year ? `'${String(trophy.year).slice(-2)}` : "";
-    cardText.innerHTML = `<b>${shortYear} ${trophy.name}</b><br>`;
+    cardText.innerHTML = `<b>${shortYear} ${trophy.brand} ${trophy.model}</b><br>`;
     cardOverlay.appendChild(cardText);
     cardInnerWrapper.appendChild(cardOverlay);
     card.appendChild(cardInnerWrapper);
@@ -106,8 +106,8 @@ const displayModal = (slots, allSlots, slotID, matches, trophyInventory, current
     });
 
     card.addEventListener("click", () => {
-      trophy.owned = true;
       slots[slotID] = trophy;
+      slots[slotID].owned = true;
       const _CurrentPage = getPaginationInfo(PAGINATION_CONTROLS).currentPage;
       renderSlots(slots, TROPHY_GRID, _CurrentPage, PAGE_SIZE, PAGINATION_CONTROLS, allSlots, trophyInventory);
       MODAL_EL.style.display = "none";

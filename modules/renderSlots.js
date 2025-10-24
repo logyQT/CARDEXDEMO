@@ -1,6 +1,7 @@
-import { sortTrophies, saveToLocalStorage, renderPaginationControls, displayModal, animateCards, disableDrag, createInternalSaveData, getMatchingTrophies } from "./index.js";
+import { sortTrophies, saveToLocalStorage, renderPaginationControls, displayModal, animateCards, disableDrag, createInternalSaveData, getMatchingTrophies, parseSlotID } from "./index.js";
 import { VERSION, COLOR_LOOKUP } from "../utils/constants.js";
 import { trophyImageManager } from "../utils/trophyImageManager.js";
+import { toastManager } from "../utils/toastManager.js";
 
 let currentRenderToken = 0; // prevents race conditions between pages
 
@@ -86,8 +87,21 @@ const renderSlots = async (slots, container, currentPage, PAGE_SIZE, PAGINATION_
 
   NEW_TROPHY_ELEMENTS.forEach((el) => {
     const slotID = el.getAttribute("data-slot-id");
-    if (slotID.split("+")[0] === "inventory") return;
+    let [_mode, _brand, _model, _year, _color, _type] = parseSlotID(slotID);
+    if (_mode === "inventory") return;
+    const matches = getMatchingTrophies(slotID, trophyInventory);
+    let message = "";
+    if (_mode === "model") {
+      message = `${_brand} ${_model}`;
+    } else if (_mode === "year") {
+      message = `${_year} ${_brand} ${_model}`;
+    } else if (_mode === "color") {
+      message = `${_color} ${_brand} ${_model}`;
+    } else if (_mode === "type") {
+      message = `${_type} ${_brand} ${_model}`;
+    }
     el.addEventListener("click", () => {
+      if (matches.length === 0) return toastManager.push(`No matching trophies found for ${message}`, 3000, "warning");
       displayModal(slots, allSlots, slotID, sortTrophies(getMatchingTrophies(slotID, trophyInventory), ["type", "model", "year", "color"]), trophyInventory, 1);
     });
   });

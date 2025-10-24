@@ -25,3 +25,6 @@ export * from "./search.js";
 export * from "./renderSlots.js";
 export * from "./displayModal.js";
 export * from "./filterTrophies.js";
+export * from "./getStats.js";
+export * from "./parseSlotID.js";
+export * from "./renderStats.js";

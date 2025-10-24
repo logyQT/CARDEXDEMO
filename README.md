@@ -75,3 +75,9 @@ Thanks also to **duckobread**, the community manager, for approving the release 
 
 - Added full image preloading for a smoother experience, especially on slower connections.
 - Optimized assets for the web - all images now use the modern WebP format, reducing file size and network usage by up to 5×.
+
+### 2.0.7
+
+- Implemented the AutoUpdate feature. The mod, that allows it work will be released on Nexus as to comply with Car Dealer Simulator’s official guidelines. Unfortunately, direct publication here is not permitted under current policy.
+- Autofill no longer overwrites your displayed trophies. It will only fill empty slots.
+- Added the **UMX 800C** trophy.
