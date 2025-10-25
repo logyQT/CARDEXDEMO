@@ -1,4 +1,4 @@
-import { sortTrophies, saveToLocalStorage, renderPaginationControls, displayModal, animateCards, disableDrag, createInternalSaveData, getMatchingTrophies, parseSlotID } from "./index.js";
+import { sortTrophies, renderPaginationControls, displayModal, animateCards, disableDrag, getMatchingTrophies, parseSlotID } from "./index.js";
 import { VERSION, COLOR_LOOKUP } from "../utils/constants.js";
 import { trophyImageManager } from "../utils/trophyImageManager.js";
 import { toastManager } from "../utils/toastManager.js";
@@ -26,13 +26,14 @@ const renderSlots = async (slots, container, currentPage, PAGE_SIZE, PAGINATION_
 
   // render all cards instantly (with placeholders)
   const cardElements = pageSlots.map((slotID) => {
+    const matches = getMatchingTrophies(slotID, trophyInventory);
     const slot = slots[slotID];
     const card = document.createElement("div");
     card.className = slot.owned ? "trophy-slot owned-true" : "trophy-slot owned-false";
     if (slot.owned) card.style.setProperty("--color", COLOR_LOOKUP[slot.type]);
     card.setAttribute("data-owned", slot.owned);
     card.setAttribute("data-slot-id", slotID);
-    if (slot.mode !== "inventory") card.setAttribute("title", slot.owned ? "Owned - Click to change displayed trophy" : "Not Owned - Click to view matching trophies you can claim");
+    if (!slotID.includes("inventory")) card.setAttribute("title", slot.owned ? "Owned - Click to change displayed trophy" : "Not Owned - Click to view matching trophies you can claim");
 
     const cardInnerWrapper = document.createElement("div");
     cardInnerWrapper.className = "trophy-slot-inner-wrapper";
@@ -51,6 +52,14 @@ const renderSlots = async (slots, container, currentPage, PAGE_SIZE, PAGINATION_
     cardText.className = "trophy-slot-text";
     const shortYear = slot.year ? `'${String(slot.year).slice(-2)}` : "";
     cardText.innerHTML = `<b>${shortYear} ${slot.name}</b><br>`;
+
+    if (!slotID.includes("inventory")) {
+      const cardMatchedNumber = document.createElement("div");
+      cardMatchedNumber.className = "trophy-slot-matched-number";
+      cardMatchedNumber.innerText = `${matches.length}`;
+      cardOverlay.appendChild(cardMatchedNumber);
+    }
+
     cardOverlay.appendChild(cardText);
     cardInnerWrapper.appendChild(cardOverlay);
     card.appendChild(cardInnerWrapper);
@@ -108,9 +117,6 @@ const renderSlots = async (slots, container, currentPage, PAGE_SIZE, PAGINATION_
 
   animateCards(NEW_TROPHY_ELEMENTS);
   disableDrag(NEW_TROPHY_ELEMENTS);
-
-  const internalSaveData = createInternalSaveData(VERSION, allSlots, trophyInventory);
-  saveToLocalStorage("internalSaveData", internalSaveData);
 };
 
 export { renderSlots };

@@ -81,3 +81,7 @@ Thanks also to **duckobread**, the community manager, for approving the release 
 - Implemented the AutoUpdate feature. The mod, that allows it work will be released on Nexus as to comply with Car Dealer Simulator’s official guidelines. Unfortunately, direct publication here is not permitted under current policy.
 - Autofill no longer overwrites your displayed trophies. It will only fill empty slots.
 - Added the **UMX 800C** trophy.
+
+### 2.0.8
+
+- Added a numeric indicator showing how many trophies match a slot.

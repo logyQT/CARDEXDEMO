@@ -13,12 +13,15 @@
  * @param {Array<Object>} trophyInventory // Array of trophy objects
  * @returns {SaveDataRoot} Internal save data object
  */
-const createInternalSaveData = (versionNumber, slots, trophyInventory) => {
+const createInternalSaveData = (versionNumber, slots, trophyInventory, stats) => {
+  const totalTrophies = stats.totalTrophies;
+  const nextMilestone = stats.nextMilestone;
   return {
     version: versionNumber,
     timestamp: Date.now(),
     slots: slots,
     trophyInventory: trophyInventory,
+    stats: { ...stats, totalTrophies: totalTrophies, nextMilestone: nextMilestone },
   };
 };
 
@@ -32,8 +35,8 @@ const readInternalSaveData = (data) => {
     console.error("Invalid data format");
     return null;
   }
-  const { version, timestamp, slots, trophyInventory } = data;
-  if (typeof version !== "string" || typeof timestamp !== "number" || typeof slots !== "object" || !Array.isArray(trophyInventory)) {
+  const { version, timestamp, slots, trophyInventory, stats } = data;
+  if (typeof version !== "string" || typeof timestamp !== "number" || typeof slots !== "object" || !Array.isArray(trophyInventory) || typeof stats !== "object") {
     console.error("Missing or invalid fields in data");
     return null;
   }
@@ -42,6 +45,7 @@ const readInternalSaveData = (data) => {
     timestamp,
     slots,
     trophyInventory,
+    stats,
   };
 };
 
@@ -50,8 +54,8 @@ const validateInternalSaveData = (data, ver) => {
     return false;
   }
 
-  const { version, timestamp, slots, trophyInventory } = data;
-  if (typeof version !== "string" || typeof timestamp !== "number" || typeof slots !== "object" || !Array.isArray(trophyInventory)) {
+  const { version, timestamp, slots, trophyInventory, stats } = data;
+  if (typeof version !== "string" || typeof timestamp !== "number" || typeof slots !== "object" || !Array.isArray(trophyInventory) || typeof stats !== "object") {
     return false;
   }
 

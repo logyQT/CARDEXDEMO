@@ -62,6 +62,8 @@ tabs.forEach((tab) => {
     if (mode === "stats") renderStats(stats, 1);
     else renderSlots(slots[mode], TROPHY_GRID, 1, PAGE_SIZE, PAGINATION_CONTROLS, slots, trophyInventory);
     updateTrophyProgress(slots, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
+    const internalSaveData = createInternalSaveData(VERSION, slots, trophyInventory, stats);
+    saveToLocalStorage("internalSaveData", internalSaveData);
   });
 });
 
@@ -72,8 +74,6 @@ ADD_TROPHY_BUTTON.addEventListener("click", () => {
   slots["inventory"] = generateAllTrophySlots("inventory", trophyInventory);
   renderSlots(slots["inventory"], TROPHY_GRID, 1, PAGE_SIZE, PAGINATION_CONTROLS, slots, trophyInventory);
   updateOverallTrophyProgress(slots, PROGRESS_BAR_TEXT, PROGRESS_BAR);
-  const internalSaveData = createInternalSaveData(VERSION, slots, trophyInventory);
-  saveToLocalStorage("internalSaveData", internalSaveData);
 });
 
 TROPHY_AUTOFILL_BUTTON.addEventListener("click", () => {
@@ -89,7 +89,7 @@ TROPHY_AUTOFILL_BUTTON.addEventListener("click", () => {
 });
 
 DOWNLOAD_JSON_BUTTON.addEventListener("click", () => {
-  const internalSaveData = createInternalSaveData(VERSION, slots, trophyInventory);
+  const internalSaveData = createInternalSaveData(VERSION, slots, trophyInventory, stats);
   exportToJSON(internalSaveData);
 });
 
@@ -264,6 +264,8 @@ const loadFromLocal = () => {
     console.info(savedData);
     slots = savedData.slots;
     trophyInventory = savedData.trophyInventory;
+    stats = savedData.stats;
+    console.log(stats);
     toastManager.push("Loaded save data from localStorage.", 2000, "success");
   } else {
     VALID_MODES.forEach((m) => {

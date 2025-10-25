@@ -1,0 +1,118 @@
+<p><a id="ue4ss"></a></p>
+<h1 id="-how-to-install-ue4ss-for-car-dealer-simulator">🛠️ How to Install UE4SS for Car Dealer Simulator</h1>
+<p><a href="#savesync-mod">Already have it installed? Skip to installing the mod.</a></p>
+<h3 id="step-1-prepare-the-ue4ss-files">Step 1: Prepare the UE4SS Files</h3>
+<ol>
+  <li><strong>Unzip the UE4SS folder</strong> you downloaded to an easily accessible spot.</li>
+  <li>
+    Inside the unzipped folder, you must find these two items:
+    <ul>
+      <li>The folder <code>ue4ss/</code></li>
+      <li>The file <code>dwmapi.dll</code></li>
+    </ul>
+  </li>
+</ol>
+<hr />
+<h3 id="step-2-find-your-game-s-installation-folder">Step 2: Find Your Game&#39;s Installation Folder</h3>
+<p>You will use Steam to locate the specific folder for <strong>Car Dealer Simulator</strong>:</p>
+<ol>
+  <li>Open <strong>Steam Library</strong>.</li>
+  <li><strong>Right-click</strong> on <strong>Car Dealer Simulator</strong>.</li>
+  <li>Go to <strong>Properties</strong>.</li>
+  <li>Select the <strong>Installed Files</strong> tab.</li>
+  <li>Click the <strong>Browse...</strong> button.</li>
+</ol>
+<hr />
+<h3 id="step-3-navigate-to-the-correct-sub-folder">Step 3: Navigate to the Correct Sub-Folder</h3>
+<p>From the main folder that opened, navigate to the specific location where the files need to go:</p>
+<p><code>CarDealerSimulator/</code> <strong>&gt;</strong> <code>Binaries/</code> <strong>&gt;</strong> <code>Win64/</code></p>
+<hr />
+<h3 id="step-4-final-installation">Step 4: Final Installation</h3>
+<ol>
+  <li>Copy the two items from Step 1 (<code>ue4ss/</code> and <code>dwmapi.dll</code>).</li>
+  <li>
+    <strong>Paste</strong> both the folder and the file directly into the <strong><code>Win64</code></strong> folder you opened in Step 3.
+  </li>
+</ol>
+<p><strong>UE4SS is now installed!</strong></p>
+<hr />
+<h2 id="-how-to-temporarily-disable-ue4ss">🛑 How to Temporarily Disable UE4SS</h2>
+<p>If you need to quickly stop the tool from loading without uninstalling it:</p>
+<ul>
+  <li>
+    In the <strong><code>Win64</code></strong> folder, simply <strong>rename</strong> the file <code>dwmapi.dll</code> to <code>**dwmapi.dll.bak**</code>.
+  </li>
+</ul>
+<hr />
+<h2 id="-how-to-uninstall-ue4ss">🗑️ How to Uninstall UE4SS</h2>
+<p>To completely remove the tool:</p>
+<ul>
+  <li>
+    Go into the <strong><code>Win64</code></strong> folder and <strong>delete</strong> both the <code>ue4ss/</code> folder and the <code>dwmapi.dll</code> file.
+  </li>
+</ul>
+<p><a id="savesync-mod"></a></p>
+<h1 id="-how-to-install-the-savesync-mod">💾 How to Install the SaveSync Mod</h1>
+<p>
+  <a href="#ue4ss"
+    ><strong><em>(Requires UE4SS to be already installed)</em></strong></a
+  >
+</p>
+<hr />
+<h3 id="step-1-prepare-the-savesync-files">Step 1: Prepare the SaveSync Files</h3>
+<ol>
+  <li>
+    <strong>Unzip the <code>SaveSync.zip</code> folder.</strong>
+  </li>
+  <li>Locate the folder named <code>SaveSync/</code> inside the unzipped contents. This is the folder we need.</li>
+</ol>
+<hr />
+<h3 id="step-2-locate-the-ue4ss-mods-folder">Step 2: Locate the UE4SS Mods Folder</h3>
+<p>Navigate to this specific location within your game&#39;s installation:</p>
+<p><code>.../CarDealerSimulator/Binaries/Win64/ue4ss/Mods/</code></p>
+<hr />
+<h3 id="step-3-move-the-mod-folder">Step 3: Move the Mod Folder</h3>
+<ul>
+  <li>
+    <strong>Move</strong> the <code>SaveSync/</code> folder from Step 1 directly into the <strong><code>Mods/</code></strong> folder.
+  </li>
+</ul>
+<hr />
+<h3 id="step-4-enable-the-mod-edit-mods-txt-">Step 4: Enable the Mod (Edit <code>mods.txt</code>)</h3>
+<ol>
+  <li>
+    In the same <strong><code>Mods/</code></strong> folder, open the file named <strong><code>mods.txt</code></strong
+    >.
+  </li>
+  <li>Add the entry <code>SaveSync: 1</code> below the &quot;New Mods add below this line&quot; comment.</li>
+</ol>
+<p>
+  <strong>Your <code>mods.txt</code> should look like this:</strong>
+</p>
+<pre><code>; New Mods <span class="hljs-built_in">add</span> below this <span class="hljs-built_in">line</span>
+; <span class="hljs-comment">-----------------------------</span>
+
+SaveSync: <span class="hljs-number">1</span>
+
+; <span class="hljs-comment">-----------------------------</span>
+; New Mods <span class="hljs-built_in">add</span> above this <span class="hljs-built_in">line</span>
+</code></pre>
+<p><strong>The SaveSync mod is now active!</strong></p>
+<hr />
+<h2 id="-how-to-disable-and-uninstall-the-mod">🛑 How to Disable and Uninstall the Mod</h2>
+<h3 id="to-disable">To Disable</h3>
+<ul>
+  <li>
+    Open <strong><code>mods.txt</code></strong> and <strong>remove</strong> the line <code>SaveSync: 1</code>.
+  </li>
+</ul>
+<h3 id="to-uninstall">To Uninstall</h3>
+<ol>
+  <li>
+    <strong>Remove</strong> the line <code>SaveSync: 1</code> from <strong><code>mods.txt</code></strong
+    >.
+  </li>
+  <li>
+    Go to the <strong><code>Mods/</code></strong> folder and <strong>delete</strong> the <strong><code>SaveSync/</code></strong> folder.
+  </li>
+</ol>
