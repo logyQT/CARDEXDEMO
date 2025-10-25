@@ -266,7 +266,7 @@ const update = async (res) => {
 AUTOUPDATE_LOCATION_PICKER.addEventListener("click", async () => {
   let dirHandle;
   try {
-    dirHandle = await window.showDirectoryPicker({ mode: "read" });
+    dirHandle = await window.showDirectoryPicker({ mode: "read", startIn: "documents" });
     if (folderWatchdog.watching) return toastManager.push("AutoUpdate already started.", 4000, "info");
     folderWatchdog.setDirectoryHandle(dirHandle);
     folderWatchdog.startWatching();
