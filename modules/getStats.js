@@ -141,7 +141,7 @@ const getStats = (SaveObject, slots) => {
 
   stats.updateStats(slots);
 
-  console.log(stats);
+  // console.log(stats);
 
   return stats;
 };

@@ -42,9 +42,104 @@ const processSaveFile = async (file = null) => {
   return processSaveObject(_SaveObject);
 };
 
+/**
+ * Cleans and formats a raw transaction string into a more readable format.
+ * - Car transactions are formatted as: "Buy Car: [Brand] [Model]", "Sell Car: [Brand] [Model]",
+ * or "[Service Name]: [Brand] [Model]".
+ * - Loan repayments are formatted as: "Loan Repayment: [x]/[y]".
+ * - Simple transactions extract the core name (e.g., "MOBICASH_FUEL" -> "Fuel").
+ * - Loan transactions with amounts are formatted as "Loan Transaction: [Amount]".
+ *
+ * @param {string} str The raw transaction name string.
+ * @returns {string} The cleaned and formatted transaction string.
+ */
+const cleanString = (str) => {
+  const complexCarMatch = str.match(/"\{(sell car|Buy Car)\}: \{brand\} \{mode\}".*?"brand",\s*INVTEXT\("([^"]+)"\),\s*"mode",\s*INVTEXT\("([^"]+)"\)/);
+  if (complexCarMatch) {
+    const operation = complexCarMatch[1].replace(" car", " Car");
+    const brand = complexCarMatch[2];
+    const model = complexCarMatch[3];
+    return `${operation}: ${brand} ${model}`;
+  }
+
+  const simpleCarServiceMatch = str.match(/INVTEXT\("([^"]+): ([^"]+) ([^"]+)"\)/);
+
+  if (simpleCarServiceMatch) {
+    const service = simpleCarServiceMatch[1];
+    const brand = simpleCarServiceMatch[2];
+    const model = simpleCarServiceMatch[3];
+    return `${service}: ${brand} ${model}`;
+  }
+
+  const genericInvtextMatch = str.match(/INVTEXT\("([^"]+)"\)$/);
+  if (genericInvtextMatch) {
+    return genericInvtextMatch[1];
+  }
+
+  const loanRepaymentMatch = str.match(/LOAN_TRANSACTION_NAME\{x\}"\),\s*"x",\s*LOCGEN_FORMAT_NAMED\(NSLOCTEXT\(.*?"x",\s*(\d+),\s*"y",\s*(\d+)\)\)/);
+  if (loanRepaymentMatch) {
+    return `Loan Repayment: ${loanRepaymentMatch[1]}/${loanRepaymentMatch[2]}`;
+  }
+
+  const loanAmountMatch = str.match(/LOAN_TRANSACTION_NAME2?\{x\}"\),\s*"x",\s*([0-9\.]+)\)/);
+  if (loanAmountMatch) {
+    return `Loan Transaction: ${loanAmountMatch[1]}`;
+  }
+
+  const simpleMatch = str.match(/"([A-Z0-9_]+)"\)$/);
+
+  if (simpleMatch) {
+    let rawName = simpleMatch[1];
+
+    let cleanName = rawName.replace(/^(MOBICASH_|MOBYCASH_|CASHMOBI_)/, "");
+
+    cleanName = cleanName
+      .toLowerCase()
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+
+    if (cleanName.startsWith("Loan Transaction Name")) {
+      return "Loan Transaction";
+    }
+
+    return cleanName;
+  }
+
+  return str;
+};
+
 const processSaveObject = (SaveObject) => {
   let _trophyInventory = getAllTrophies(SaveObject);
   let _stats = getStats(SaveObject, slots);
+
+  // let rawTransactions = SaveObject.Economy.moneyTransactions;
+  // let processedTransactions = [];
+
+  // const start = performance.now();
+  // for (const tx of rawTransactions) {
+  //   processedTransactions.push({
+  //     amount: tx.amount,
+  //     name: cleanString(tx.name),
+  //   });
+  // }
+
+  // const end = performance.now();
+  // console.info(`Processed ${rawTransactions.length} transactions in ${(end - start).toFixed(2)} ms`);
+  // console.log(processedTransactions);
+
+  // const spentOnCars = processedTransactions.filter((tx) => tx.name.startsWith("Buy Car")).reduce((sum, tx) => sum + tx.amount, 0);
+  // console.log(`Total spent on cars: $${spentOnCars.toLocaleString()}`);
+  // const soldCarsIncome = processedTransactions.filter((tx) => tx.name.startsWith("sell Car")).reduce((sum, tx) => sum + tx.amount, 0);
+  // console.log(`Total income from sold cars: $${soldCarsIncome.toLocaleString()}`);
+  // // const profitFromCars = soldCarsIncome - spentOnCars;
+  // // console.log(`Total profit from cars: $${profitFromCars.toLocaleString()}`);
+  // const otherCosts = processedTransactions.filter((tx) => !tx.name.startsWith("Buy Car") && !tx.name.startsWith("sell Car") && !tx.name.startsWith("Loan Transaction") && !tx.name.startsWith("Car Crusher") && tx.amount < 0).reduce((sum, tx) => sum + tx.amount, 0);
+  // console.log(`Total other costs/income: $${otherCosts.toLocaleString()}`);
+  // const spentOnCrushing = processedTransactions.filter((tx) => tx.name === "Car Crusher").reduce((sum, tx) => sum + tx.amount, 0);
+  // console.log(`Total spent on crushing: $${spentOnCrushing.toLocaleString()}`);
+  // console.log(`Total spent on trophies: ~$${(soldCarsIncome + otherCosts + spentOnCars - spentOnCrushing).toLocaleString()}`);
+
   _trophyInventory = sortTrophies(_trophyInventory, ["type", "model", "year", "color"]);
   return { _trophyInventory, _stats };
 };
@@ -143,43 +238,48 @@ IMPORT_SAVE_FILE_BUTTON.addEventListener("change", async (event) => {
 import { folderWatchdog } from "./utils/autoUpdate/folderWatchdog.js";
 import { autoUpdate } from "./utils/autoUpdate/autoUpdate.js";
 import { cSaveObject } from "./utils/autoUpdate/cSaveObject.js";
+
+const update = async (res) => {
+  if (!res || !res.handle) return;
+  toastManager.push("Changes detected...", 2000, "sync");
+  const file = await res.handle.getFile();
+  const _saveObject = await cSaveObject(file);
+  let _res = processSaveObject(_saveObject);
+  let _trophyInventory = _res._trophyInventory;
+  if (_trophyInventory.length <= trophyInventory.length) return;
+  //toastManager.push("New trophies detected...", 3000, "sync");
+  trophyInventory = _trophyInventory;
+  slots["inventory"] = generateAllTrophySlots("inventory", trophyInventory);
+  slots = autoFillTrophySlots(slots, trophyInventory);
+  const _CurrentPage = getPaginationInfo(PAGINATION_CONTROLS).currentPage;
+  updateTrophyProgress(slots, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
+  if (SEARCH_BAR.value.trim() !== "") {
+    renderSlots(smartSearch(SEARCH_BAR.value.trim(), slots[mode]), TROPHY_GRID, 1, PAGE_SIZE, PAGINATION_CONTROLS, slots, trophyInventory);
+  } else {
+    renderSlots(slots[mode], TROPHY_GRID, _CurrentPage, PAGE_SIZE, PAGINATION_CONTROLS, slots, trophyInventory);
+  }
+  const internalSaveData = createInternalSaveData(VERSION, slots, trophyInventory, stats);
+  saveToLocalStorage("internalSaveData", internalSaveData);
+  toastManager.push("CarDex updated with new trophies!", 4000, "success");
+};
+
 AUTOUPDATE_LOCATION_PICKER.addEventListener("click", async () => {
   let dirHandle;
   try {
     dirHandle = await window.showDirectoryPicker({ mode: "read" });
-    folderWatchdog(dirHandle);
+    if (folderWatchdog.watching) return toastManager.push("AutoUpdate already started.", 4000, "info");
+    folderWatchdog.setDirectoryHandle(dirHandle);
+    folderWatchdog.startWatching();
+    toastManager.push("Folder selected for auto-update.", 4000, "success");
   } catch (err) {
     toastManager.push("Folder access canceled or unsupported.", 4000, "error");
-    console.error("Error accessing folder:", err);
     return;
   }
   if (!dirHandle) {
     toastManager.push("No folder selected for auto-update.", 4000, "error");
     return;
   }
-
-  const update = async () => {
-    if (!autoUpdate.hasChanges()) return;
-    toastManager.push("Checking for updates...", 2000, "info");
-    const res = await autoUpdate.pull();
-    const file = await res.handle.getFile();
-    const _saveObject = await cSaveObject(file);
-    let _res = processSaveObject(_saveObject);
-    let _trophyInventory = _res._trophyInventory;
-    if (_trophyInventory.length <= trophyInventory.length) return;
-    toastManager.push("New trophies detected...", 3000, "success");
-    trophyInventory = _trophyInventory;
-    slots["inventory"] = generateAllTrophySlots("inventory", trophyInventory);
-    slots = autoFillTrophySlots(slots, trophyInventory);
-    const _CurrentPage = getPaginationInfo(PAGINATION_CONTROLS).currentPage;
-    updateTrophyProgress(slots, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
-    if (SEARCH_BAR.value.trim() !== "") {
-      renderSlots(smartSearch(SEARCH_BAR.value.trim(), slots[mode]), TROPHY_GRID, 1, PAGE_SIZE, PAGINATION_CONTROLS, slots, trophyInventory);
-    } else {
-      renderSlots(slots[mode], TROPHY_GRID, _CurrentPage, PAGE_SIZE, PAGINATION_CONTROLS, slots, trophyInventory);
-    }
-  };
-  setInterval(update, 1000);
+  autoUpdate.subscribe(update);
 });
 
 SHARE_BUTTON.addEventListener("click", async () => {
@@ -265,7 +365,7 @@ const loadFromLocal = () => {
     slots = savedData.slots;
     trophyInventory = savedData.trophyInventory;
     stats = savedData.stats;
-    console.log(stats);
+    // console.log(stats);
     toastManager.push("Loaded save data from localStorage.", 2000, "success");
   } else {
     VALID_MODES.forEach((m) => {

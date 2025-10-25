@@ -29,31 +29,49 @@ class ToastManager {
 
   _displayToast(text, lifetime, type) {
     const toast = document.createElement("div");
-    toast.textContent = text;
+
+    toast.style.display = "flex";
+    toast.style.flexDirection = "row";
+    toast.style.gap = "0.5rem";
     toast.style.padding = "0.5rem 1rem";
     toast.style.margin = "0.5rem 0";
-    toast.style.borderRadius = "999px";
-    toast.style.color = "#fff";
-    toast.style.fontSize = "0.9rem";
+    toast.style.borderRadius = "100vh";
+    toast.style.color = "whitesmoke";
+    toast.style.fontSize = "1rem";
     toast.style.fontWeight = "bold";
     toast.style.pointerEvents = "auto";
-    toast.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.2)";
     toast.style.transition = "opacity 0.3s ease";
     toast.style.opacity = "1";
+    toast.style.backgroundColor = "#0f171f";
+    toast.style.pointerEvents = "none";
+    toast.style.maxWidth = "80vw";
 
     switch (type) {
       case "success":
-        toast.style.backgroundColor = "#4caf50";
+        toast.style.backgroundColor = "rgba(0, 128, 0, 0.95)";
+        toast.style.boxShadow = "0 0 8px rgba(0, 255, 0, 0.95)";
         break;
       case "error":
-        toast.style.backgroundColor = "#f44336";
+        toast.style.backgroundColor = "rgba(128, 0, 0, 0.95)";
+        toast.style.boxShadow = "0 0 8px rgba(255, 0, 0, 0.95)";
         break;
       case "warning":
-        toast.style.backgroundColor = "#ff9800";
+        toast.style.backgroundColor = "rgba(128, 128, 0, 0.95)";
+        toast.style.boxShadow = "0 0 8px rgba(255, 255, 0, 0.95)";
+        break;
+      case "info":
+        toast.style.backgroundColor = "rgba(21, 126, 224, 0.95)";
+        toast.style.boxShadow = "0 0 8px rgba(21, 126, 224, 0.95)";
         break;
       default:
-        toast.style.backgroundColor = "#2196f3";
+        toast.style.backgroundColor = "rgba(36, 90, 170, 0.95)";
+        toast.style.boxShadow = "0 0 8px rgba(36, 90, 170, 0.95)";
+        break;
     }
+
+    const textElement = document.createElement("p");
+    textElement.textContent = text;
+    toast.appendChild(textElement);
 
     this.container.appendChild(toast);
 
