@@ -9,7 +9,7 @@ import { PAGINATION_CONTROLS, TROPHY_GRID } from "../utils/domRefs.js";
 let currentRenderToken = 0;
 
 const renderSlots = async (slots, currentPage, allSlots, trophyInventory) => {
-  const start = performance.now();
+  // const start = performance.now();
   const myToken = ++currentRenderToken;
 
   if (!slots || typeof slots !== "object") {
@@ -115,8 +115,8 @@ const renderSlots = async (slots, currentPage, allSlots, trophyInventory) => {
 
   animateCards(NEW_TROPHY_ELEMENTS);
   disableDrag(NEW_TROPHY_ELEMENTS);
-  const end = performance.now();
-  console.log(`Rendered page ${currentPage} with ${pageSlots.length} trophies in ${(end - start).toFixed(2)} ms`);
+  // const end = performance.now();
+  // console.log(`Rendered page ${currentPage} with ${pageSlots.length} trophies in ${(end - start).toFixed(2)} ms`);
 };
 
 export { renderSlots };
