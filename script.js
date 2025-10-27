@@ -33,11 +33,11 @@ const processSaveFile = async (file = null) => {
     return;
   }
 
-  const start = performance.now();
+  // const start = performance.now();
   const _SaveObject = getSaveObject(db);
   db.close();
-  const end = performance.now();
-  console.info(`Database query and parsing took ${(end - start).toFixed(2)} ms`);
+  // const end = performance.now();
+  // console.info(`Database query and parsing took ${(end - start).toFixed(2)} ms`);
 
   return processSaveObject(_SaveObject);
 };
@@ -113,7 +113,7 @@ const processSaveObject = (SaveObject) => {
   let _trophyInventory = getAllTrophies(SaveObject);
   let _stats = getStats(SaveObject, slots);
 
-  console.log(SaveObject);
+  // console.log(SaveObject);
   // let rawTransactions = SaveObject.Economy.moneyTransactions;
   // let processedTransactions = [];
 
@@ -192,7 +192,7 @@ IMPORT_JSON_BUTTON.addEventListener("change", (event) => {
   const file = event.target.files[0];
   if (file) {
     importFromJSON(file, (data) => {
-      console.info("Imported data:", data);
+      // console.info("Imported data:", data);
       slots = data.slots;
       trophyInventory = data.trophyInventory;
       const _CurrentPage = getPaginationInfo(PAGINATION_CONTROLS).currentPage;
@@ -211,7 +211,8 @@ RESET_BUTTON.addEventListener("click", () => {
   }
   renderSlots(slots[mode], 1, slots, trophyInventory);
   updateTrophyProgress(slots, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
-  console.info("Save data reset.");
+  toastManager.push("Save data reset to default.", 3000, "success");
+  // console.info("Save data reset.");
 });
 
 let typingTimer;
