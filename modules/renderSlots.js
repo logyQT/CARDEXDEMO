@@ -4,15 +4,16 @@ import { trophyImageManager } from "../utils/trophyImageManager.js";
 import { toastManager } from "../utils/toastManager.js";
 import { sortTrophySlots } from "./sortTrophySlots.js";
 import { sortHandler } from "../utils/sortHandler.js";
-import { PAGINATION_CONTROLS, TROPHY_GRID } from "../utils/domRefs.js";
+import { PAGINATION_CONTROLS, TROPHY_GRID, SEARCH_BAR } from "../utils/domRefs.js";
+import { smartSearch } from "../modules/search.js";
 
 let currentRenderToken = 0;
 
-const renderSlots = async (slots, currentPage, allSlots, trophyInventory) => {
+const renderSlots = async (mode, currentPage, allSlots, trophyInventory) => {
   // const start = performance.now();
   const myToken = ++currentRenderToken;
 
-  if (!slots || typeof slots !== "object") {
+  if (mode === "inventory" && Object.keys(allSlots[mode]).length === 0) {
     TROPHY_GRID.innerHTML = "<p style='color: white; text-align: center; grid-column: span 6;'>No trophies in inventory. Load a save file or enable AutoUpdate to get started.</p>";
     renderPaginationControls(PAGINATION_CONTROLS, 1, 1, () => {});
     return;
@@ -20,6 +21,7 @@ const renderSlots = async (slots, currentPage, allSlots, trophyInventory) => {
 
   TROPHY_GRID.innerHTML = "";
 
+  let slots = smartSearch(SEARCH_BAR.value.trim(), allSlots[mode]);
   slots = sortTrophySlots(slots, sortHandler.getSortParams());
   const slotIDs = Object.keys(slots);
   const totalPages = Math.ceil(slotIDs.length / PAGE_SIZE) || 1;
@@ -87,7 +89,7 @@ const renderSlots = async (slots, currentPage, allSlots, trophyInventory) => {
   cardElements.forEach((card) => TROPHY_GRID.appendChild(card));
 
   renderPaginationControls(PAGINATION_CONTROLS, currentPage, totalPages, async (newPage) => {
-    await renderSlots(slots, newPage, allSlots, trophyInventory);
+    await renderSlots(mode, newPage, allSlots, trophyInventory);
   });
 
   const NEW_TROPHY_ELEMENTS = TROPHY_GRID.querySelectorAll(".trophy-slot");

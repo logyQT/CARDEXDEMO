@@ -106,10 +106,10 @@ const displayModal = (slots, allSlots, slotID, matches, trophyInventory, current
     });
 
     card.addEventListener("click", () => {
-      slots[slotID] = trophy;
-      slots[slotID].owned = true;
+      allSlots[mode][slotID] = trophy;
+      allSlots[mode][slotID].owned = true;
       const _CurrentPage = getPaginationInfo(PAGINATION_CONTROLS).currentPage;
-      renderSlots(slots, _CurrentPage, allSlots, trophyInventory);
+      renderSlots(mode, _CurrentPage, allSlots, trophyInventory);
       MODAL_EL.style.display = "none";
       MODAL_BODY.innerHTML = "";
     });

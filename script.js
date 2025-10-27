@@ -33,114 +33,15 @@ const processSaveFile = async (file = null) => {
     return;
   }
 
-  // const start = performance.now();
   const _SaveObject = getSaveObject(db);
   db.close();
-  // const end = performance.now();
-  // console.info(`Database query and parsing took ${(end - start).toFixed(2)} ms`);
 
   return processSaveObject(_SaveObject);
-};
-
-/**
- * Cleans and formats a raw transaction string into a more readable format.
- * - Car transactions are formatted as: "Buy Car: [Brand] [Model]", "Sell Car: [Brand] [Model]",
- * or "[Service Name]: [Brand] [Model]".
- * - Loan repayments are formatted as: "Loan Repayment: [x]/[y]".
- * - Simple transactions extract the core name (e.g., "MOBICASH_FUEL" -> "Fuel").
- * - Loan transactions with amounts are formatted as "Loan Transaction: [Amount]".
- *
- * @param {string} str The raw transaction name string.
- * @returns {string} The cleaned and formatted transaction string.
- */
-const cleanString = (str) => {
-  const complexCarMatch = str.match(/"\{(sell car|Buy Car)\}: \{brand\} \{mode\}".*?"brand",\s*INVTEXT\("([^"]+)"\),\s*"mode",\s*INVTEXT\("([^"]+)"\)/);
-  if (complexCarMatch) {
-    const operation = complexCarMatch[1].replace(" car", " Car");
-    const brand = complexCarMatch[2];
-    const model = complexCarMatch[3];
-    return `${operation}: ${brand} ${model}`;
-  }
-
-  const simpleCarServiceMatch = str.match(/INVTEXT\("([^"]+): ([^"]+) ([^"]+)"\)/);
-
-  if (simpleCarServiceMatch) {
-    const service = simpleCarServiceMatch[1];
-    const brand = simpleCarServiceMatch[2];
-    const model = simpleCarServiceMatch[3];
-    return `${service}: ${brand} ${model}`;
-  }
-
-  const genericInvtextMatch = str.match(/INVTEXT\("([^"]+)"\)$/);
-  if (genericInvtextMatch) {
-    return genericInvtextMatch[1];
-  }
-
-  const loanRepaymentMatch = str.match(/LOAN_TRANSACTION_NAME\{x\}"\),\s*"x",\s*LOCGEN_FORMAT_NAMED\(NSLOCTEXT\(.*?"x",\s*(\d+),\s*"y",\s*(\d+)\)\)/);
-  if (loanRepaymentMatch) {
-    return `Loan Repayment: ${loanRepaymentMatch[1]}/${loanRepaymentMatch[2]}`;
-  }
-
-  const loanAmountMatch = str.match(/LOAN_TRANSACTION_NAME2?\{x\}"\),\s*"x",\s*([0-9\.]+)\)/);
-  if (loanAmountMatch) {
-    return `Loan Transaction: ${loanAmountMatch[1]}`;
-  }
-
-  const simpleMatch = str.match(/"([A-Z0-9_]+)"\)$/);
-
-  if (simpleMatch) {
-    let rawName = simpleMatch[1];
-
-    let cleanName = rawName.replace(/^(MOBICASH_|MOBYCASH_|CASHMOBI_)/, "");
-
-    cleanName = cleanName
-      .toLowerCase()
-      .split("_")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
-
-    if (cleanName.startsWith("Loan Transaction Name")) {
-      return "Loan Transaction";
-    }
-
-    return cleanName;
-  }
-
-  return str;
 };
 
 const processSaveObject = (SaveObject) => {
   let _trophyInventory = getAllTrophies(SaveObject);
   let _stats = getStats(SaveObject, slots);
-
-  // console.log(SaveObject);
-  // let rawTransactions = SaveObject.Economy.moneyTransactions;
-  // let processedTransactions = [];
-
-  // const start = performance.now();
-  // for (const tx of rawTransactions) {
-  //   processedTransactions.push({
-  //     amount: tx.amount,
-  //     name: cleanString(tx.name),
-  //   });
-  // }
-
-  // const end = performance.now();
-  // console.info(`Processed ${rawTransactions.length} transactions in ${(end - start).toFixed(2)} ms`);
-  // console.log(processedTransactions);
-
-  // const spentOnCars = processedTransactions.filter((tx) => tx.name.startsWith("Buy Car")).reduce((sum, tx) => sum + tx.amount, 0);
-  // console.log(`Total spent on cars: $${spentOnCars.toLocaleString()}`);
-  // const soldCarsIncome = processedTransactions.filter((tx) => tx.name.startsWith("sell Car")).reduce((sum, tx) => sum + tx.amount, 0);
-  // console.log(`Total income from sold cars: $${soldCarsIncome.toLocaleString()}`);
-  // // const profitFromCars = soldCarsIncome - spentOnCars;
-  // // console.log(`Total profit from cars: $${profitFromCars.toLocaleString()}`);
-  // const otherCosts = processedTransactions.filter((tx) => !tx.name.startsWith("Buy Car") && !tx.name.startsWith("sell Car") && !tx.name.startsWith("Loan Transaction") && !tx.name.startsWith("Car Crusher") && tx.amount < 0).reduce((sum, tx) => sum + tx.amount, 0);
-  // console.log(`Total other costs/income: $${otherCosts.toLocaleString()}`);
-  // const spentOnCrushing = processedTransactions.filter((tx) => tx.name === "Car Crusher").reduce((sum, tx) => sum + tx.amount, 0);
-  // console.log(`Total spent on crushing: $${spentOnCrushing.toLocaleString()}`);
-  // console.log(`Total spent on trophies: ~$${(soldCarsIncome + otherCosts + spentOnCars - spentOnCrushing).toLocaleString()}`);
-
   _trophyInventory = sortTrophies(_trophyInventory, ["type", "model", "year", "color"]);
   return { _trophyInventory, _stats };
 };
@@ -156,20 +57,12 @@ tabs.forEach((tab) => {
     mode = tab.getAttribute("data-mode");
     SEARCH_BAR.value = "";
     if (mode === "stats") renderStats(stats, 1);
-    else renderSlots(slots[mode], 1, slots, trophyInventory);
+    else renderSlots(mode, 1, slots, trophyInventory);
     updateTrophyProgress(slots, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
     const internalSaveData = createInternalSaveData(VERSION, slots, trophyInventory, stats);
     saveToLocalStorage("internalSaveData", internalSaveData);
   });
 });
-
-// ADD_TROPHY_BUTTON.addEventListener("click", () => {
-//   trophyInventory.push(generateRandomTrophy());
-//   trophyInventory = sortTrophies(trophyInventory, ["type", "model", "year", "color"]);
-//   slots["inventory"] = generateAllTrophySlots("inventory", trophyInventory);
-//   renderSlots(slots["inventory"], TROPHY_GRID, 1, PAGE_SIZE, PAGINATION_CONTROLS, slots, trophyInventory);
-//   updateOverallTrophyProgress(slots, PROGRESS_BAR_TEXT, PROGRESS_BAR);
-// });
 
 TROPHY_AUTOFILL_BUTTON.addEventListener("click", () => {
   if (trophyInventory.length === 0) {
@@ -179,7 +72,7 @@ TROPHY_AUTOFILL_BUTTON.addEventListener("click", () => {
   mode = mode === "inventory" ? "model" : mode;
   slots = autoFillTrophySlots(slots, trophyInventory);
   const _CurrentPage = getPaginationInfo(PAGINATION_CONTROLS).currentPage;
-  renderSlots(slots[mode], _CurrentPage, slots, trophyInventory);
+  renderSlots(mode, _CurrentPage, slots, trophyInventory);
   updateTrophyProgress(slots, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
 });
 
@@ -192,11 +85,10 @@ IMPORT_JSON_BUTTON.addEventListener("change", (event) => {
   const file = event.target.files[0];
   if (file) {
     importFromJSON(file, (data) => {
-      // console.info("Imported data:", data);
       slots = data.slots;
       trophyInventory = data.trophyInventory;
       const _CurrentPage = getPaginationInfo(PAGINATION_CONTROLS).currentPage;
-      renderSlots(slots[mode], _CurrentPage, slots, trophyInventory);
+      renderSlots(mode, _CurrentPage, slots, trophyInventory);
       updateTrophyProgress(slots, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
     });
   }
@@ -209,7 +101,7 @@ RESET_BUTTON.addEventListener("click", () => {
   for (const mode in slots) {
     slots[mode] = generateAllTrophySlots(mode, trophyInventory);
   }
-  renderSlots(slots[mode], 1, slots, trophyInventory);
+  renderSlots(mode, 1, slots, trophyInventory);
   updateTrophyProgress(slots, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
   toastManager.push("Save data reset to default.", 3000, "success");
   // console.info("Save data reset.");
@@ -221,7 +113,7 @@ const doneTypingInterval = 500;
 SEARCH_BAR.addEventListener("input", () => {
   if (typingTimer) clearTimeout(typingTimer);
   typingTimer = setTimeout(() => {
-    renderSlots(smartSearch(SEARCH_BAR.value.trim(), slots[mode]), 1, slots, trophyInventory);
+    renderSlots(mode, 1, slots, trophyInventory);
   }, doneTypingInterval);
 });
 
@@ -233,7 +125,7 @@ for (const button of SORTING_BUTTONS) {
     button.setAttribute("data-state", (parseInt(button.getAttribute("data-state")) + 1) % 3);
     sortHandler.handlePress(property);
     const _CurrentPage = getPaginationInfo(PAGINATION_CONTROLS).currentPage;
-    renderSlots(smartSearch(SEARCH_BAR.value.trim(), slots[mode]), _CurrentPage, slots, trophyInventory);
+    renderSlots(mode, _CurrentPage, slots, trophyInventory);
   });
 }
 
@@ -254,7 +146,7 @@ IMPORT_SAVE_FILE_INPUT.addEventListener("change", async (event) => {
   trophyInventory = res._trophyInventory;
   stats = res._stats;
   slots["inventory"] = generateAllTrophySlots("inventory", trophyInventory);
-  renderSlots(slots["inventory"], 1, slots, trophyInventory);
+  renderSlots("inventory", 1, slots, trophyInventory);
   updateOverallTrophyProgress(slots, PROGRESS_BAR_TEXT, PROGRESS_BAR);
 });
 
@@ -276,11 +168,7 @@ const update = async (res) => {
   slots = autoFillTrophySlots(slots, trophyInventory);
   const _CurrentPage = getPaginationInfo(PAGINATION_CONTROLS).currentPage;
   updateTrophyProgress(slots, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
-  if (SEARCH_BAR.value.trim() !== "") {
-    renderSlots(smartSearch(SEARCH_BAR.value.trim(), slots[mode]), 1, slots, trophyInventory);
-  } else {
-    renderSlots(slots[mode], _CurrentPage, slots, trophyInventory);
-  }
+  renderSlots(mode, _CurrentPage, slots, trophyInventory);
   const internalSaveData = createInternalSaveData(VERSION, slots, trophyInventory, stats);
   saveToLocalStorage("internalSaveData", internalSaveData);
   toastManager.push("CarDex updated with new trophies!", 4000, "success");
@@ -401,7 +289,7 @@ const loadFromLocal = () => {
     });
     toastManager.push("No valid saved data found in localStorage.", 2000, "warning");
   }
-  renderSlots(slots[mode], 1, slots, trophyInventory);
+  renderSlots(mode, 1, slots, trophyInventory);
 };
 
 const fetchSharedData = async (id) => {
@@ -445,7 +333,7 @@ if (window.location.hash && window.location.hash.length > 1) {
       };
       //console.log("Decompressed data:", slots);
       unlockInteraction();
-      renderSlots(slots["model"], 1, slots, trophyInventory);
+      renderSlots(mode, 1, slots, trophyInventory);
     } else {
       unlockInteraction();
       loadFromLocal();
