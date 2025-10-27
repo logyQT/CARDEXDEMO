@@ -1,21 +1,26 @@
 import { sortTrophies, renderPaginationControls, displayModal, animateCards, disableDrag, getMatchingTrophies, parseSlotID } from "./index.js";
-import { VERSION, COLOR_LOOKUP } from "../utils/constants.js";
+import { COLOR_LOOKUP, PAGE_SIZE } from "../utils/constants.js";
 import { trophyImageManager } from "../utils/trophyImageManager.js";
 import { toastManager } from "../utils/toastManager.js";
+import { sortTrophySlots } from "./sortTrophySlots.js";
+import { sortHandler } from "../utils/sortHandler.js";
+import { PAGINATION_CONTROLS, TROPHY_GRID } from "../utils/domRefs.js";
 
-let currentRenderToken = 0; // prevents race conditions between pages
+let currentRenderToken = 0;
 
-const renderSlots = async (slots, container, currentPage, PAGE_SIZE, PAGINATION_CONTROLS, allSlots, trophyInventory) => {
+const renderSlots = async (slots, currentPage, allSlots, trophyInventory) => {
+  const start = performance.now();
   const myToken = ++currentRenderToken;
 
   if (!slots || typeof slots !== "object") {
-    container.innerHTML = "<p style='color: white; text-align: center; grid-column: span 6;'>No trophies in inventory. Add some using the random trophy button or by loading a save file.</p>";
+    TROPHY_GRID.innerHTML = "<p style='color: white; text-align: center; grid-column: span 6;'>No trophies in inventory. Add some using the random trophy button or by loading a save file.</p>";
     renderPaginationControls(PAGINATION_CONTROLS, 1, 1, () => {});
     return;
   }
 
-  container.innerHTML = "";
+  TROPHY_GRID.innerHTML = "";
 
+  slots = sortTrophySlots(slots, sortHandler.getSortParams());
   const slotIDs = Object.keys(slots);
   const totalPages = Math.ceil(slotIDs.length / PAGE_SIZE) || 1;
   if (currentPage > totalPages) currentPage = totalPages;
@@ -24,7 +29,6 @@ const renderSlots = async (slots, container, currentPage, PAGE_SIZE, PAGINATION_
   const endIdx = startIdx + PAGE_SIZE;
   const pageSlots = slotIDs.slice(startIdx, endIdx);
 
-  // render all cards instantly (with placeholders)
   const cardElements = pageSlots.map((slotID) => {
     const matches = getMatchingTrophies(slotID, trophyInventory);
     const slot = slots[slotID];
@@ -38,14 +42,12 @@ const renderSlots = async (slots, container, currentPage, PAGE_SIZE, PAGINATION_
     const cardInnerWrapper = document.createElement("div");
     cardInnerWrapper.className = "trophy-slot-inner-wrapper";
 
-    // Placeholder first
     const placeholder = document.createElement("img");
-    placeholder.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIW2P4DwQMBAADdQFcbW1XjAAAAABJRU5ErkJggg==";
+    placeholder.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAYdEVYdFNvZnR3YXJlAFBhaW50Lk5FVCA1LjEuN4vW9zkAAAC2ZVhJZklJKgAIAAAABQAaAQUAAQAAAEoAAAAbAQUAAQAAAFIAAAAoAQMAAQAAAAIAAAAxAQIAEAAAAFoAAABphwQAAQAAAGoAAAAAAAAAYAAAAAEAAABgAAAAAQAAAFBhaW50Lk5FVCA1LjEuNwADAACQBwAEAAAAMDIzMAGgAwABAAAAAQAAAAWgBAABAAAAlAAAAAAAAAACAAEAAgAEAAAAUjk4AAIABwAEAAAAMDEwMAAAAAAlR56NozS1xQAAAAxJREFUGFdj4BSQAAAAVwAyp9aragAAAABJRU5ErkJggg==";
     placeholder.className = "trophy-slot-img placeholder";
     placeholder.alt = "Loading...";
     cardInnerWrapper.appendChild(placeholder);
 
-    // Overlay text
     const cardOverlay = document.createElement("div");
     cardOverlay.className = "trophy-slot-overlay";
     const cardText = document.createElement("div");
@@ -64,12 +66,10 @@ const renderSlots = async (slots, container, currentPage, PAGE_SIZE, PAGINATION_
     cardInnerWrapper.appendChild(cardOverlay);
     card.appendChild(cardInnerWrapper);
 
-    // queue async image load but don't block render
     const imgColor = slot.color ?? "Black";
     const imgType = slot.type ?? "Common";
 
     trophyImageManager.getImage(slot.brand, slot.model, imgColor, imgType).then((image) => {
-      // if page changed before load finished, skip
       if (myToken !== currentRenderToken || !image) return;
 
       const loadedImg = image.cloneNode();
@@ -82,17 +82,15 @@ const renderSlots = async (slots, container, currentPage, PAGE_SIZE, PAGINATION_
     return card;
   });
 
-  // bail early if outdated
   if (myToken !== currentRenderToken) return;
 
-  // add cards instantly (with placeholders)
-  cardElements.forEach((card) => container.appendChild(card));
+  cardElements.forEach((card) => TROPHY_GRID.appendChild(card));
 
   renderPaginationControls(PAGINATION_CONTROLS, currentPage, totalPages, async (newPage) => {
-    await renderSlots(slots, container, newPage, PAGE_SIZE, PAGINATION_CONTROLS, allSlots, trophyInventory);
+    await renderSlots(slots, newPage, allSlots, trophyInventory);
   });
 
-  const NEW_TROPHY_ELEMENTS = container.querySelectorAll(".trophy-slot");
+  const NEW_TROPHY_ELEMENTS = TROPHY_GRID.querySelectorAll(".trophy-slot");
 
   NEW_TROPHY_ELEMENTS.forEach((el) => {
     const slotID = el.getAttribute("data-slot-id");
@@ -117,6 +115,8 @@ const renderSlots = async (slots, container, currentPage, PAGE_SIZE, PAGINATION_
 
   animateCards(NEW_TROPHY_ELEMENTS);
   disableDrag(NEW_TROPHY_ELEMENTS);
+  const end = performance.now();
+  console.log(`Rendered page ${currentPage} with ${pageSlots.length} trophies in ${(end - start).toFixed(2)} ms`);
 };
 
 export { renderSlots };

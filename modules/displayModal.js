@@ -1,7 +1,7 @@
 import { trophyImageManager } from "../utils/trophyImageManager.js";
 import { renderPaginationControls, getPaginationInfo, renderSlots } from "./index.js";
 import { PAGE_SIZE, COLOR_LOOKUP } from "../utils/constants.js";
-import { MODAL_PAGINATION_CONTROLS, PAGINATION_CONTROLS, TROPHY_GRID } from "../utils/domRefs.js";
+import { MODAL_PAGINATION_CONTROLS, PAGINATION_CONTROLS } from "../utils/domRefs.js";
 
 const capitalizeString = (string) => {
   if (!string) return "";
@@ -76,7 +76,7 @@ const displayModal = (slots, allSlots, slotID, matches, trophyInventory, current
     cardInnerWrapper.className = "trophy-slot-inner-wrapper";
 
     const placeholder = document.createElement("img");
-    placeholder.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIW2P4DwQMBAADdQFcbW1XjAAAAABJRU5ErkJggg==";
+    placeholder.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAYdEVYdFNvZnR3YXJlAFBhaW50Lk5FVCA1LjEuN4vW9zkAAAC2ZVhJZklJKgAIAAAABQAaAQUAAQAAAEoAAAAbAQUAAQAAAFIAAAAoAQMAAQAAAAIAAAAxAQIAEAAAAFoAAABphwQAAQAAAGoAAAAAAAAAYAAAAAEAAABgAAAAAQAAAFBhaW50Lk5FVCA1LjEuNwADAACQBwAEAAAAMDIzMAGgAwABAAAAAQAAAAWgBAABAAAAlAAAAAAAAAACAAEAAgAEAAAAUjk4AAIABwAEAAAAMDEwMAAAAAAlR56NozS1xQAAAAxJREFUGFdj4BSQAAAAVwAyp9aragAAAABJRU5ErkJggg==";
     placeholder.className = "trophy-slot-img placeholder";
     placeholder.alt = "Loading trophy...";
     cardInnerWrapper.appendChild(placeholder);
@@ -109,7 +109,7 @@ const displayModal = (slots, allSlots, slotID, matches, trophyInventory, current
       slots[slotID] = trophy;
       slots[slotID].owned = true;
       const _CurrentPage = getPaginationInfo(PAGINATION_CONTROLS).currentPage;
-      renderSlots(slots, TROPHY_GRID, _CurrentPage, PAGE_SIZE, PAGINATION_CONTROLS, allSlots, trophyInventory);
+      renderSlots(slots, _CurrentPage, allSlots, trophyInventory);
       MODAL_EL.style.display = "none";
       MODAL_BODY.innerHTML = "";
     });

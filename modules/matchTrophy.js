@@ -6,7 +6,7 @@
  */
 
 const matchTrophy = (slotID, trophy) => {
-  let [smode, sbrand, smodel, syear, scolor, stype] = slotID.replace(/_/g, " ").split("+"); // Assuming slotID format is "mode-brand-model-year-color-type"
+  let [smode, sbrand, smodel, syear, scolor, stype] = slotID.replace(/_/g, " ").split("+");
   let { brand, model, year, color, type } = trophy;
   brand = brand.toLowerCase();
   model = model.toLowerCase();

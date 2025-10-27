@@ -5,16 +5,8 @@ class TrophyImageManager {
   static instance = null;
 
   constructor() {
-    if (TrophyImageManager.instance) return TrophyImageManager.instance;
-
     this.cache = new Map();
     this.isPreloading = false;
-
-    TrophyImageManager.instance = this;
-  }
-
-  static getInstance() {
-    return new TrophyImageManager();
   }
 
   _getTrophyId(brand, model, color, type) {
@@ -208,4 +200,4 @@ class TrophyImageManager {
   }
 }
 
-export const trophyImageManager = TrophyImageManager.getInstance();
+export const trophyImageManager = new TrophyImageManager();

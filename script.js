@@ -1,6 +1,6 @@
 import { renderStats, getStats, createInternalSaveData, getPaginationInfo, sortTrophies, generateRandomTrophy, getSaveObject, getDatabase, disableDrag, generateAllTrophySlots, saveToLocalStorage, loadFromLocalStorage, validateInternalSaveData, removeFromLocalStorage, exportToJSON, importFromJSON, updateTrophyProgress, getAllTrophies, updateOverallTrophyProgress, autoFillTrophySlots, renderSlots, smartSearch } from "./modules/index.js";
-import { SHARE_BUTTON, IMPORT_SAVE_FILE_BUTTON, PROGRESS_BAR, PROGRESS_BAR_TEXT, PAGINATION_CONTROLS, VERSION_TEXT, RESET_BUTTON, IMPORT_JSON_BUTTON, DOWNLOAD_JSON_BUTTON, TROPHY_AUTOFILL_BUTTON, ADD_TROPHY_BUTTON, SEARCH_BAR, TROPHY_GRID, COPY_SHARE_LINK_BUTTON, CLOSE_SHARE_LINK_BUTTON, SHARE_LINK_CONTAINER, SHARE_LINK_INPUT, AUTOUPDATE_LOCATION_PICKER } from "./utils/domRefs.js";
-import { GAME_VERSION, VERSION, PAGE_SIZE, VALID_MODES } from "./utils/constants.js";
+import { IMPORT_SAVE_FILE_INPUT, SHARE_BUTTON, IMPORT_SAVE_FILE_BUTTON, PROGRESS_BAR, PROGRESS_BAR_TEXT, PAGINATION_CONTROLS, VERSION_TEXT, RESET_BUTTON, IMPORT_JSON_BUTTON, DOWNLOAD_JSON_BUTTON, TROPHY_AUTOFILL_BUTTON, ADD_TROPHY_BUTTON, SEARCH_BAR, TROPHY_GRID, COPY_SHARE_LINK_BUTTON, CLOSE_SHARE_LINK_BUTTON, SHARE_LINK_CONTAINER, SHARE_LINK_INPUT, AUTOUPDATE_LOCATION_PICKER, SORTING_BUTTONS } from "./utils/domRefs.js";
+import { GAME_VERSION, VERSION, VALID_MODES } from "./utils/constants.js";
 import { CONFIG } from "./config/config.js";
 import { lockInteraction, unlockInteraction } from "./utils/interactionLock.js";
 import { trophyImageManager } from "./utils/trophyImageManager.js";
@@ -113,6 +113,7 @@ const processSaveObject = (SaveObject) => {
   let _trophyInventory = getAllTrophies(SaveObject);
   let _stats = getStats(SaveObject, slots);
 
+  console.log(SaveObject);
   // let rawTransactions = SaveObject.Economy.moneyTransactions;
   // let processedTransactions = [];
 
@@ -155,7 +156,7 @@ tabs.forEach((tab) => {
     mode = tab.getAttribute("data-mode");
     SEARCH_BAR.value = "";
     if (mode === "stats") renderStats(stats, 1);
-    else renderSlots(slots[mode], TROPHY_GRID, 1, PAGE_SIZE, PAGINATION_CONTROLS, slots, trophyInventory);
+    else renderSlots(slots[mode], 1, slots, trophyInventory);
     updateTrophyProgress(slots, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
     const internalSaveData = createInternalSaveData(VERSION, slots, trophyInventory, stats);
     saveToLocalStorage("internalSaveData", internalSaveData);
@@ -178,7 +179,7 @@ TROPHY_AUTOFILL_BUTTON.addEventListener("click", () => {
   mode = mode === "inventory" ? "model" : mode;
   slots = autoFillTrophySlots(slots, trophyInventory);
   const _CurrentPage = getPaginationInfo(PAGINATION_CONTROLS).currentPage;
-  renderSlots(slots[mode], TROPHY_GRID, _CurrentPage, PAGE_SIZE, PAGINATION_CONTROLS, slots, trophyInventory);
+  renderSlots(slots[mode], _CurrentPage, slots, trophyInventory);
   updateTrophyProgress(slots, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
 });
 
@@ -195,7 +196,7 @@ IMPORT_JSON_BUTTON.addEventListener("change", (event) => {
       slots = data.slots;
       trophyInventory = data.trophyInventory;
       const _CurrentPage = getPaginationInfo(PAGINATION_CONTROLS).currentPage;
-      renderSlots(slots[mode], TROPHY_GRID, _CurrentPage, PAGE_SIZE, PAGINATION_CONTROLS, slots, trophyInventory);
+      renderSlots(slots[mode], _CurrentPage, slots, trophyInventory);
       updateTrophyProgress(slots, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
     });
   }
@@ -208,7 +209,7 @@ RESET_BUTTON.addEventListener("click", () => {
   for (const mode in slots) {
     slots[mode] = generateAllTrophySlots(mode, trophyInventory);
   }
-  renderSlots(slots[mode], TROPHY_GRID, 1, PAGE_SIZE, PAGINATION_CONTROLS, slots, trophyInventory);
+  renderSlots(slots[mode], 1, slots, trophyInventory);
   updateTrophyProgress(slots, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
   console.info("Save data reset.");
 });
@@ -219,18 +220,40 @@ const doneTypingInterval = 500;
 SEARCH_BAR.addEventListener("input", () => {
   if (typingTimer) clearTimeout(typingTimer);
   typingTimer = setTimeout(() => {
-    renderSlots(smartSearch(SEARCH_BAR.value.trim(), slots[mode]), TROPHY_GRID, 1, PAGE_SIZE, PAGINATION_CONTROLS, slots, trophyInventory);
+    renderSlots(smartSearch(SEARCH_BAR.value.trim(), slots[mode]), 1, slots, trophyInventory);
   }, doneTypingInterval);
 });
+
+import { sortHandler } from "./utils/sortHandler.js";
+
+for (const button of SORTING_BUTTONS) {
+  button.addEventListener("click", () => {
+    const property = button.getAttribute("data-sort");
+    button.setAttribute("data-state", (parseInt(button.getAttribute("data-state")) + 1) % 3);
+    sortHandler.handlePress(property);
+    const _CurrentPage = getPaginationInfo(PAGINATION_CONTROLS).currentPage;
+    renderSlots(smartSearch(SEARCH_BAR.value.trim(), slots[mode]), _CurrentPage, slots, trophyInventory);
+  });
+}
+
 VERSION_TEXT.innerText = `v${VERSION} (game ver. ${GAME_VERSION})`;
 
-IMPORT_SAVE_FILE_BUTTON.addEventListener("change", async (event) => {
+IMPORT_SAVE_FILE_BUTTON.addEventListener("click", () => {
+  navigator.clipboard.writeText("%LOCALAPPDATA%\\CarDealerSimulator\\Saved").then(() => {
+    toastManager.push("Path to save folder copied to clipboard!", 3000, "success");
+    setTimeout(() => {
+      IMPORT_SAVE_FILE_INPUT.click();
+    }, 500);
+  });
+});
+
+IMPORT_SAVE_FILE_INPUT.addEventListener("change", async (event) => {
   const res = await processSaveFile(event.target?.files[0]);
   if (!res) return;
   trophyInventory = res._trophyInventory;
   stats = res._stats;
   slots["inventory"] = generateAllTrophySlots("inventory", trophyInventory);
-  renderSlots(slots["inventory"], TROPHY_GRID, 1, PAGE_SIZE, PAGINATION_CONTROLS, slots, trophyInventory);
+  renderSlots(slots["inventory"], 1, slots, trophyInventory);
   updateOverallTrophyProgress(slots, PROGRESS_BAR_TEXT, PROGRESS_BAR);
 });
 
@@ -253,9 +276,9 @@ const update = async (res) => {
   const _CurrentPage = getPaginationInfo(PAGINATION_CONTROLS).currentPage;
   updateTrophyProgress(slots, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
   if (SEARCH_BAR.value.trim() !== "") {
-    renderSlots(smartSearch(SEARCH_BAR.value.trim(), slots[mode]), TROPHY_GRID, 1, PAGE_SIZE, PAGINATION_CONTROLS, slots, trophyInventory);
+    renderSlots(smartSearch(SEARCH_BAR.value.trim(), slots[mode]), 1, slots, trophyInventory);
   } else {
-    renderSlots(slots[mode], TROPHY_GRID, _CurrentPage, PAGE_SIZE, PAGINATION_CONTROLS, slots, trophyInventory);
+    renderSlots(slots[mode], _CurrentPage, slots, trophyInventory);
   }
   const internalSaveData = createInternalSaveData(VERSION, slots, trophyInventory, stats);
   saveToLocalStorage("internalSaveData", internalSaveData);
@@ -350,9 +373,10 @@ SHARE_BUTTON.addEventListener("click", async () => {
   COPY_SHARE_LINK_BUTTON.onclick = () => {
     navigator.clipboard.writeText(SHARE_LINK_INPUT.value).then(
       () => {
-        alert("Link copied to clipboard!");
+        toastManager.push("Shareable link copied to clipboard!", 3000, "success");
       },
       (err) => {
+        toastManager.push("Failed to copy link to clipboard.", 3000, "error");
         console.error("Could not copy text: ", err);
       }
     );
@@ -376,7 +400,7 @@ const loadFromLocal = () => {
     });
     toastManager.push("No valid saved data found in localStorage.", 2000, "warning");
   }
-  renderSlots(slots[mode], TROPHY_GRID, 1, PAGE_SIZE, PAGINATION_CONTROLS, slots, trophyInventory);
+  renderSlots(slots[mode], 1, slots, trophyInventory);
 };
 
 const fetchSharedData = async (id) => {
@@ -420,7 +444,7 @@ if (window.location.hash && window.location.hash.length > 1) {
       };
       //console.log("Decompressed data:", slots);
       unlockInteraction();
-      renderSlots(slots["model"], TROPHY_GRID, 1, PAGE_SIZE, PAGINATION_CONTROLS, slots, trophyInventory);
+      renderSlots(slots["model"], 1, slots, trophyInventory);
     } else {
       unlockInteraction();
       loadFromLocal();
@@ -437,4 +461,4 @@ if (window.location.hash && window.location.hash.length > 1) {
 updateTrophyProgress(slots, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
 disableDrag(document.querySelectorAll("*"));
 trophyImageManager.registerAll();
-await trophyImageManager.preloadAll();
+trophyImageManager.preloadAll();

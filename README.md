@@ -23,12 +23,8 @@ Possible future enhancements include:
 
 - **Rewards:** Unlock cosmetic upgrades or new gameplay features as you progress.
 - ~~**Search:** Locate specific cars quickly using a search bar.~~ Has been implemented in 2.0.2 release.
-- **Sorting:** Arrange the trophy index by name, type, or other criteria.
+- ~~**Sorting:** Arrange the trophy index by name, type, or other criteria.~~ Has been implemented as of 2.0.9.
 - ~~**Filtering:** Display only missing or owned cars to easily track your collection.~~ Implemented by the search bar - you can search for missing / owned cars as of 2.0.2 release.
-
-Even if no further features are added, this demo serves as a reference for anyone interested in similar mechanics.
-
-Some features are currently missing and may be added in the future, depending on interest and available time. The current version focuses on one core mechanic, with room for expansion.
 
 ## Limitations
 
@@ -87,3 +83,7 @@ Thanks also to **duckobread**, the community manager, for approving the release 
 - Added a numeric indicator showing how many trophies match a slot.
 - Refactor: Improved AutoUpdate logic to cover all Actor use cases.
 - Improved AutoUpdate to reuse last selected location.
+
+### 2.0.9
+
+- Implemented sorting functionality

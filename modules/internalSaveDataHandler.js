@@ -11,6 +11,7 @@
  * @param {string} versionNumber // self-explanatory
  * @param {Object} slots // Array of car objects
  * @param {Array<Object>} trophyInventory // Array of trophy objects
+ * @param {Object} stats // Stats object
  * @returns {SaveDataRoot} Internal save data object
  */
 const createInternalSaveData = (versionNumber, slots, trophyInventory, stats) => {

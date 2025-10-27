@@ -17,15 +17,18 @@
         <div class="sidebar">
           <div class="controls">
             <input class="search-bar" id="search-bar" placeholder="ex. Striker gold >1990" type="search" />
-            <!-- <div class="sorting-options">
-                            <div class="sort-state-button" data-sort="brand" data-state="0">B</div>
-                            <div class="sort-state-button" data-sort="model" data-state="0">M</div>
-                            <div class="sort-state-button" data-sort="year" data-state="0">Y</div>
-                            <div class="sort-state-button" data-sort="color" data-state="0">C</div>
-                            <div class="sort-state-button" data-sort="type" data-state="0">T</div>
-                        </div> -->
           </div>
           <div class="tabs">
+            <div class="category">
+              SORT BY
+              <div class="sub">
+                <div class="sort-state-button tab" data-sort="brand" data-state="0">BRAND</div>
+                <div class="sort-state-button tab" data-sort="model" data-state="0">MODEL</div>
+                <div class="sort-state-button tab" data-sort="year" data-state="0">YEAR</div>
+                <div class="sort-state-button tab" data-sort="color" data-state="0">COLOR</div>
+                <div class="sort-state-button tab" data-sort="type" data-state="0">TYPE</div>
+              </div>
+            </div>
             <div class="category">
               CARDEX
               <div class="sub">
@@ -33,15 +36,13 @@
                 <div class="tab" data-mode="year">YEAR</div>
                 <div class="tab" data-mode="color">COLOR</div>
                 <div class="tab" data-mode="type">TROPHY TYPE</div>
-                <!-- <div class="tab" data-mode="stats">STATS</div> -->
+                <div id="view-inventory-btn" class="tab" data-mode="inventory">INVENTORY</div>
               </div>
             </div>
 
             <div class="category">
               ACTIONS
               <div class="sub">
-                <div id="view-inventory-btn" class="tab" data-mode="inventory">INVENTORY</div>
-                <!-- <div id="add-random-trophy-btn" class="tab">RANDOM TROPHY</div> -->
                 <div id="auto-fill-btn" class="tab">AUTOFILL</div>
                 <div id="share-btn" class="tab">SHARE</div>
               </div>
@@ -50,9 +51,8 @@
             <div class="category">
               IMPORT/EXPORT
               <div class="sub">
-                <label for="import-save-file-input" id="mediaInputLabel" class="tab">LOAD .HRS FILE</label>
+                <div class="tab" id="import-save-file-button">LOAD .HRS FILE</div>
                 <input type="file" id="import-save-file-input" accept=".hrs" class="hidden" />
-                <!-- <div id="import-save-file-input" class="tab">LOAD .HRS FILE</div> -->
                 <div id="download-save-btn" class="tab">DOWNLOAD JSON</div>
                 <label for="upload-save-btn" id="jsonUploadLabel" class="tab">LOAD JSON</label>
                 <input type="file" id="upload-save-btn" accept=".json" class="hidden" />
