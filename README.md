@@ -86,3 +86,4 @@ Thanks also to **duckobread**, the community manager, for approving the release 
 
 - Added a numeric indicator showing how many trophies match a slot.
 - Refactor: Improved AutoUpdate logic to cover all Actor use cases.
+- Improved AutoUpdate to reuse last selected location.

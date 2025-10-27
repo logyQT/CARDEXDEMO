@@ -162,14 +162,13 @@ tabs.forEach((tab) => {
   });
 });
 
-ADD_TROPHY_BUTTON.style.display = "none"; // Hide the button as per version 2.0.5 changes
-ADD_TROPHY_BUTTON.addEventListener("click", () => {
-  trophyInventory.push(generateRandomTrophy());
-  trophyInventory = sortTrophies(trophyInventory, ["type", "model", "year", "color"]);
-  slots["inventory"] = generateAllTrophySlots("inventory", trophyInventory);
-  renderSlots(slots["inventory"], TROPHY_GRID, 1, PAGE_SIZE, PAGINATION_CONTROLS, slots, trophyInventory);
-  updateOverallTrophyProgress(slots, PROGRESS_BAR_TEXT, PROGRESS_BAR);
-});
+// ADD_TROPHY_BUTTON.addEventListener("click", () => {
+//   trophyInventory.push(generateRandomTrophy());
+//   trophyInventory = sortTrophies(trophyInventory, ["type", "model", "year", "color"]);
+//   slots["inventory"] = generateAllTrophySlots("inventory", trophyInventory);
+//   renderSlots(slots["inventory"], TROPHY_GRID, 1, PAGE_SIZE, PAGINATION_CONTROLS, slots, trophyInventory);
+//   updateOverallTrophyProgress(slots, PROGRESS_BAR_TEXT, PROGRESS_BAR);
+// });
 
 TROPHY_AUTOFILL_BUTTON.addEventListener("click", () => {
   if (trophyInventory.length === 0) {
@@ -223,8 +222,8 @@ SEARCH_BAR.addEventListener("input", () => {
     renderSlots(smartSearch(SEARCH_BAR.value.trim(), slots[mode]), TROPHY_GRID, 1, PAGE_SIZE, PAGINATION_CONTROLS, slots, trophyInventory);
   }, doneTypingInterval);
 });
-
 VERSION_TEXT.innerText = `v${VERSION} (game ver. ${GAME_VERSION})`;
+
 IMPORT_SAVE_FILE_BUTTON.addEventListener("change", async (event) => {
   const res = await processSaveFile(event.target?.files[0]);
   if (!res) return;
@@ -238,6 +237,7 @@ IMPORT_SAVE_FILE_BUTTON.addEventListener("change", async (event) => {
 import { folderWatchdog } from "./utils/autoUpdate/folderWatchdog.js";
 import { autoUpdate } from "./utils/autoUpdate/autoUpdate.js";
 import { cSaveObject } from "./utils/autoUpdate/cSaveObject.js";
+import { getDirHandle, saveDirHandle } from "./utils/fsHandler.js";
 
 const update = async (res) => {
   if (!res || !res.handle) return;
@@ -247,7 +247,6 @@ const update = async (res) => {
   let _res = processSaveObject(_saveObject);
   let _trophyInventory = _res._trophyInventory;
   if (_trophyInventory.length <= trophyInventory.length) return;
-  //toastManager.push("New trophies detected...", 3000, "sync");
   trophyInventory = _trophyInventory;
   slots["inventory"] = generateAllTrophySlots("inventory", trophyInventory);
   slots = autoFillTrophySlots(slots, trophyInventory);
@@ -265,21 +264,26 @@ const update = async (res) => {
 
 AUTOUPDATE_LOCATION_PICKER.addEventListener("click", async () => {
   let dirHandle;
-  try {
-    dirHandle = await window.showDirectoryPicker({ mode: "read", startIn: "documents" });
-    if (folderWatchdog.watching) return toastManager.push("AutoUpdate already started.", 4000, "info");
-    folderWatchdog.setDirectoryHandle(dirHandle);
-    folderWatchdog.startWatching();
-    toastManager.push("Folder selected for auto-update.", 4000, "success");
-  } catch (err) {
-    toastManager.push("Folder access canceled or unsupported.", 4000, "error");
-    return;
-  }
+  dirHandle = await getDirHandle("autoUpdateDirHandle");
   if (!dirHandle) {
-    toastManager.push("No folder selected for auto-update.", 4000, "error");
-    return;
+    dirHandle = await window.showDirectoryPicker({ mode: "read", startIn: "documents" });
   }
-  autoUpdate.subscribe(update);
+  try {
+    const perm = await dirHandle.requestPermission({ mode: "read" });
+    if (perm === "granted") {
+      if (folderWatchdog.watching) return toastManager.push("AutoUpdate already started.", 4000, "info");
+      folderWatchdog.setDirectoryHandle(dirHandle);
+      folderWatchdog.startWatching();
+      autoUpdate.subscribe(update);
+      toastManager.push("Folder access restored for auto-update.", 4000, "success");
+      saveDirHandle("autoUpdateDirHandle", dirHandle);
+      return;
+    } else {
+      toastManager.push("Folder access canceled or unsupported.", 4000, "error");
+    }
+  } catch (err) {
+    toastManager.push("Error requesting permission for saved directory handle", 4000, "error");
+  }
 });
 
 SHARE_BUTTON.addEventListener("click", async () => {
@@ -365,7 +369,6 @@ const loadFromLocal = () => {
     slots = savedData.slots;
     trophyInventory = savedData.trophyInventory;
     stats = savedData.stats;
-    // console.log(stats);
     toastManager.push("Loaded save data from localStorage.", 2000, "success");
   } else {
     VALID_MODES.forEach((m) => {
