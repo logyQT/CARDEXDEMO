@@ -13,7 +13,7 @@ const renderSlots = async (slots, currentPage, allSlots, trophyInventory) => {
   const myToken = ++currentRenderToken;
 
   if (!slots || typeof slots !== "object") {
-    TROPHY_GRID.innerHTML = "<p style='color: white; text-align: center; grid-column: span 6;'>No trophies in inventory. Add some using the random trophy button or by loading a save file.</p>";
+    TROPHY_GRID.innerHTML = "<p style='color: white; text-align: center; grid-column: span 6;'>No trophies in inventory. Load a save file or enable AutoUpdate to get started.</p>";
     renderPaginationControls(PAGINATION_CONTROLS, 1, 1, () => {});
     return;
   }
