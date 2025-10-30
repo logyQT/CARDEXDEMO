@@ -16,7 +16,6 @@ const cSaveObject = async (file) => {
     return null;
   }
   res = walkObjectParseJson(res);
-  // console.log(res);
   let SaveObject = { ...res.additional_systems, RuntimeObjects: {} };
 
   for (const key in res.runtime_objects) {

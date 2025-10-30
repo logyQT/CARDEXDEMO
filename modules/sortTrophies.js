@@ -1,5 +1,4 @@
 const sortTrophies = (trophies, criterion) => {
-  //console.log(trophies);
   if (Array.isArray(criterion)) {
     const criteria = criterion;
     const compare = (a, b) => {

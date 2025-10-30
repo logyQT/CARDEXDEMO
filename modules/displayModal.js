@@ -112,9 +112,6 @@ const displayModal = (slots, allSlots, slotID, matches, trophyInventory, current
     displayModal(slots, allSlots, slotID, matches, trophyInventory, newPage);
   });
 
-  // const end = performance.now();
-  // console.log(`Modal render time: ${(end - start).toFixed(2)} ms`);
-
   SLOT_TROPHY_MODAL.classList.toggle("active", true);
 };
 

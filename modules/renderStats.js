@@ -16,7 +16,6 @@ const typeLookup = (n) => {
 
 const renderStats = async (stats, currentPage) => {
   const myToken = ++currentRenderToken;
-  // console.log(stats);
   TROPHY_GRID.innerHTML = "";
   const models = Object.fromEntries(allCarModels.map((item, i) => [i, item]));
   const slotIDs = Object.keys(models);
@@ -55,7 +54,6 @@ const renderStats = async (stats, currentPage) => {
     const tooltip = document.createElement("div");
     tooltip.className = "tooltip";
     const missingColors = stats?.carDex?.color?.missing?.[model]?.map((car) => car.color);
-    // console.log("Missing colors for", model, ":", missingColors);
     tooltip.innerHTML = `${slot.name}
       <br>Car crushed: ${stats?.totalTrophies?.[model] ?? 0}
       <br><p>Missing Colors: ${missingColors || "None"}</p>
