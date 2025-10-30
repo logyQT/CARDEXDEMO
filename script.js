@@ -220,7 +220,6 @@ RESET_BUTTON.addEventListener("click", () => {
   renderSlots(mode, 1, slots, trophyInventory);
   updateTrophyProgress(slots, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
   toastManager.push("Save data reset to default.", 3000, "success");
-  // console.info("Save data reset.");
 });
 
 let typingTimer;
@@ -268,9 +267,15 @@ IMPORT_SAVE_FILE_INPUT.addEventListener("change", async (event) => {
   if (!res) return;
   trophyInventory = res._trophyInventory;
   stats = res._stats;
-  slots["inventory"] = generateAllTrophySlots("inventory", trophyInventory);
-  renderSlots("inventory", 1, slots, trophyInventory);
+  mode = "inventory";
+  slots[mode] = generateAllTrophySlots(mode, trophyInventory);
+  renderSlots(mode, 1, slots, trophyInventory);
   updateOverallTrophyProgress(slots, PROGRESS_BAR_TEXT, PROGRESS_BAR);
+  tabs.forEach((tab) => {
+    if (!tab.getAttribute("data-mode")) return;
+    tabs.forEach((t) => t.classList.remove("active"));
+    if (tab.getAttribute("data-mode") === mode) tab.classList.add("active");
+  });
 });
 
 import { folderWatchdog } from "./utils/autoUpdate/folderWatchdog.js";
@@ -342,7 +347,6 @@ SHARE_BUTTON.addEventListener("click", async () => {
       },
       v: VERSION,
     };
-    //console.log("Compressed data:", json);
     const jsonStr = JSON.stringify(json);
     const compressed = LZString.compressToEncodedURIComponent(jsonStr);
     const saveStr = `#${compressed}`;
@@ -454,7 +458,6 @@ if (window.location.hash && window.location.hash.length > 1) {
         type: decompressTrophySlots(parsed.slots["3"]),
         inventory: slots.inventory,
       };
-      //console.log("Decompressed data:", slots);
       unlockInteraction();
       renderSlots(mode, 1, slots, trophyInventory);
     } else {
