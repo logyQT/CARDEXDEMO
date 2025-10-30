@@ -1,7 +1,7 @@
 import { trophyImageManager } from "../utils/trophyImageManager.js";
 import { renderPaginationControls, getPaginationInfo, renderSlots } from "./index.js";
 import { PAGE_SIZE, COLOR_LOOKUP } from "../utils/constants.js";
-import { MODAL_PAGINATION_CONTROLS, PAGINATION_CONTROLS } from "../utils/domRefs.js";
+import { MODAL_PAGINATION_CONTROLS, PAGINATION_CONTROLS, SLOT_TROPHY_MODAL } from "../utils/domRefs.js";
 
 const capitalizeString = (string) => {
   if (!string) return "";
@@ -14,19 +14,19 @@ const capitalizeString = (string) => {
 let currentModalRenderToken = 0;
 
 const displayModal = (slots, allSlots, slotID, matches, trophyInventory, currentPage) => {
+  // const start = performance.now();
   const myToken = ++currentModalRenderToken;
   renderPaginationControls(MODAL_PAGINATION_CONTROLS, 1, 1, () => {});
 
-  const MODAL_EL = document.getElementById("slot-trophy-modal");
   const MODAL_TITLE_EL = document.getElementById("slot-trophy-title");
   const MODAL_BODY = document.getElementById("modal-grid");
 
   const closeModal = () => {
-    MODAL_EL.style.display = "none";
-    MODAL_BODY.innerHTML = "";
+    SLOT_TROPHY_MODAL.classList.remove("active");
   };
+
   window.onclick = (event) => {
-    if (event.target === MODAL_EL) closeModal();
+    if (event.target === SLOT_TROPHY_MODAL) closeModal();
   };
   window.onkeydown = (event) => {
     if (event.key === "Escape") closeModal();
@@ -51,14 +51,7 @@ const displayModal = (slots, allSlots, slotID, matches, trophyInventory, current
   }
 
   MODAL_TITLE_EL.innerText = `Found ${matches.length} matching ${matches.length === 1 ? "trophy" : "trophies"} for ${name}`;
-
   MODAL_BODY.innerHTML = "";
-
-  if (matches.length === 0) {
-    MODAL_BODY.innerHTML = "<p>No matching trophies found.</p>";
-    MODAL_EL.style.display = "flex";
-    return;
-  }
 
   const totalPages = Math.ceil(matches.length / PAGE_SIZE) || 1;
   if (currentPage > totalPages) currentPage = totalPages;
@@ -110,7 +103,7 @@ const displayModal = (slots, allSlots, slotID, matches, trophyInventory, current
       allSlots[mode][slotID].owned = true;
       const _CurrentPage = getPaginationInfo(PAGINATION_CONTROLS).currentPage;
       renderSlots(mode, _CurrentPage, allSlots, trophyInventory);
-      MODAL_EL.style.display = "none";
+      closeModal();
       MODAL_BODY.innerHTML = "";
     });
   });
@@ -119,7 +112,10 @@ const displayModal = (slots, allSlots, slotID, matches, trophyInventory, current
     displayModal(slots, allSlots, slotID, matches, trophyInventory, newPage);
   });
 
-  MODAL_EL.style.display = "flex";
+  // const end = performance.now();
+  // console.log(`Modal render time: ${(end - start).toFixed(2)} ms`);
+
+  SLOT_TROPHY_MODAL.classList.toggle("active", true);
 };
 
 export { displayModal };

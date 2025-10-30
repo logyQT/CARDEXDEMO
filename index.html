@@ -4,10 +4,13 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>CDS - CarDex</title>
-    <link href="./style.css" rel="stylesheet" />
     <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.5.0/sql-wasm.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
+    <link href="./style.css" rel="stylesheet" />
     <script src="./script.js" defer type="module"></script>
   </head>
 
@@ -16,10 +19,29 @@
       <div class="app">
         <div class="sidebar">
           <div class="controls">
-            <input class="search-bar" id="search-bar" placeholder="ex. Striker gold >1990" type="search" />
+            <input class="search-bar" id="search-bar" placeholder="Search..." type="search" />
+            <div class="search-options-btn" id="search-options-btn">⋮</div>
           </div>
-          <div class="tabs">
-            <div class="category">
+          <div class="menu">
+            <!-- <details class="category">
+              <summary>FILTERS</summary>
+              <div class="sub-dropdown">
+                <select>
+                  <option selected>test</option>
+                </select>
+                <select>
+                  <option selected>test</option>
+                </select>
+                <select>
+                  <option selected>test</option>
+                </select>
+                <select>
+                  <option selected>test</option>
+                </select>
+              </div>
+            </details> -->
+
+            <!-- <div class="category">
               SORT BY
               <div class="sub">
                 <div class="sort-state-button tab" data-sort="brand" data-state="0">BRAND</div>
@@ -28,7 +50,7 @@
                 <div class="sort-state-button tab" data-sort="color" data-state="0">COLOR</div>
                 <div class="sort-state-button tab" data-sort="type" data-state="0">TYPE</div>
               </div>
-            </div>
+            </div> -->
             <div class="category">
               CARDEX
               <div class="sub">
@@ -49,14 +71,15 @@
             </div>
 
             <div class="category">
-              IMPORT/EXPORT
+              DATA
               <div class="sub">
                 <div class="tab" id="import-save-file-button">LOAD .HRS FILE</div>
                 <input type="file" id="import-save-file-input" accept=".hrs" class="hidden" />
-                <div id="download-save-btn" class="tab">DOWNLOAD JSON</div>
-                <label for="upload-save-btn" id="jsonUploadLabel" class="tab">LOAD JSON</label>
+                <div id="download-save-btn" class="tab" style="display: none">DOWNLOAD JSON</div>
+                <!-- <label for="upload-save-btn" id="jsonUploadLabel" class="tab">LOAD JSON</label> -->
                 <input type="file" id="upload-save-btn" accept=".json" class="hidden" />
-                <div id="reset-save-btn" class="tab">RESET SAVE DATA</div>
+                <!-- change LOAD JSON to normal div - invoke file input with js -->
+                <div id="reset-save-btn" class="tab">RESET DATA</div>
               </div>
             </div>
             <div class="category">
@@ -72,7 +95,7 @@
         <div class="main">
           <div class="top-bar">
             <div class="progress-wrapper">
-              <div class="small" id="progress-text">CarDex Completion: <strong id="progress-text-value">0%</strong></div>
+              <div class="small" id="progress-text"><strong id="progress-text-value">0%</strong></div>
               <div class="bar">
                 <i id="progress-bar"> </i>
               </div>
@@ -86,7 +109,7 @@
     </div>
     <div id="interaction-lock"></div>
     <footer class="footer">
-      <div>CarDex Demo <i id="version-number"></i> &middot; Developed by logy80 &middot; <a href="https://github.com/logyQT/CARDEXDEMO" class="muted" style="text-decoration: none">GitHub</a> &middot; Big thanks to <strong>.faulty.</strong> for sharing mapping data and game assets.</div>
+      <div>CarDex <i id="version-number"></i> &middot; Developed by logy80 &middot; <a href="https://github.com/logyQT/CARDEXDEMO" class="muted" style="text-decoration: none">GitHub</a> &middot; Big thanks to <strong>.faulty.</strong> for sharing mapping data and game assets.</div>
       <p>This project is not affiliated with, endorsed by, or associated with the developers or publishers of Car Dealer Simulator.</p>
       <p>All trademarks and copyrights remain the property of their respective owners.</p>
     </footer>
@@ -104,7 +127,25 @@
           <h2 id="slot-trophy-title">Slot Trophy</h2>
           <div id="modal-pagination-controls" class="pagination-controls"></div>
         </div>
-        <div id="modal-grid" class="grid">No trophies yet.</div>
+        <div id="modal-grid" class="grid"></div>
+      </div>
+    </div>
+    <div id="search-options-modal" class="modal">
+      <div class="search-options-modal-wrapper" id="search-options-modal-wrapper">
+        <h1>Filters</h1>
+        <div class="search-options-filters" id="search-options-filters"></div>
+        <h1>Sorting</h1>
+        <div class="search-options-sorting" id="search-options-sorting">
+          <div class="sort-state-button" data-sort="brand" data-state="0">BRAND</div>
+          <div class="sort-state-button" data-sort="model" data-state="0">MODEL</div>
+          <div class="sort-state-button" data-sort="year" data-state="0">YEAR</div>
+          <div class="sort-state-button" data-sort="color" data-state="0">COLOR</div>
+          <div class="sort-state-button" data-sort="type" data-state="0">TYPE</div>
+        </div>
+        <div class="search-options-buttons">
+          <div id="clear-search-options-btn" class="clear-search-options-btn">Clear</div>
+          <div id="apply-search-options-btn" class="apply-search-options-btn">Apply</div>
+        </div>
       </div>
     </div>
   </body>

@@ -33,5 +33,6 @@ carData.forEach((car) => {
   modelToProdYearsMap.set(car.model, { prodStart: car.prodStart, prodEnd: car.prodEnd });
 });
 const allCarModels = carData.map((car) => car.model);
+const allCarBrands = Array.from(new Set(carData.map((car) => car.brand)));
 
-export { carData, modelToBrandMap, modelToProdYearsMap, allCarModels };
+export { carData, modelToBrandMap, modelToProdYearsMap, allCarModels, allCarBrands };

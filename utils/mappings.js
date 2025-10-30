@@ -73,3 +73,22 @@ const E_CarDexMode = {
   NewEnumerator4: "inventory",
 };
 export { E_CarBrand, E_CarModel, E_VehiclePaintColor, E_TrophyType, E_CarDexMode };
+
+export const E_VehiclePaintColorHumanReadable = {
+  NewEnumerator0: "Black",
+  NewEnumerator1: "Silver",
+  NewEnumerator2: "Red",
+  NewEnumerator3: "Blue",
+  NewEnumerator4: "Purple",
+  NewEnumerator5: "Navy Blue",
+  NewEnumerator7: "White",
+  NewEnumerator8: "Gray",
+  NewEnumerator9: "Gold",
+  NewEnumerator10: "Green",
+  NewEnumerator11: "Brown",
+  NewEnumerator12: "Orange",
+  NewEnumerator13: "Yellow",
+  NewEnumerator14: "Graphite",
+  NewEnumerator15: "Light Blue",
+  NewEnumerator16: "Olive Green",
+};

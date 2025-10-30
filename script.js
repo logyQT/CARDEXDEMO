@@ -1,11 +1,127 @@
 import { renderStats, getStats, createInternalSaveData, getPaginationInfo, sortTrophies, generateRandomTrophy, getSaveObject, getDatabase, disableDrag, generateAllTrophySlots, saveToLocalStorage, loadFromLocalStorage, validateInternalSaveData, removeFromLocalStorage, exportToJSON, importFromJSON, updateTrophyProgress, getAllTrophies, updateOverallTrophyProgress, autoFillTrophySlots, renderSlots, smartSearch } from "./modules/index.js";
-import { IMPORT_SAVE_FILE_INPUT, SHARE_BUTTON, IMPORT_SAVE_FILE_BUTTON, PROGRESS_BAR, PROGRESS_BAR_TEXT, PAGINATION_CONTROLS, VERSION_TEXT, RESET_BUTTON, IMPORT_JSON_BUTTON, DOWNLOAD_JSON_BUTTON, TROPHY_AUTOFILL_BUTTON, ADD_TROPHY_BUTTON, SEARCH_BAR, TROPHY_GRID, COPY_SHARE_LINK_BUTTON, CLOSE_SHARE_LINK_BUTTON, SHARE_LINK_CONTAINER, SHARE_LINK_INPUT, AUTOUPDATE_LOCATION_PICKER, SORTING_BUTTONS } from "./utils/domRefs.js";
+import { SEARCH_OPTIONS_FILTERS, IMPORT_SAVE_FILE_INPUT, SHARE_BUTTON, IMPORT_SAVE_FILE_BUTTON, PROGRESS_BAR, PROGRESS_BAR_TEXT, PAGINATION_CONTROLS, VERSION_TEXT, RESET_BUTTON, IMPORT_JSON_BUTTON, DOWNLOAD_JSON_BUTTON, TROPHY_AUTOFILL_BUTTON, ADD_TROPHY_BUTTON, SEARCH_BAR, TROPHY_GRID, COPY_SHARE_LINK_BUTTON, CLOSE_SHARE_LINK_BUTTON, SHARE_LINK_CONTAINER, SHARE_LINK_INPUT, AUTOUPDATE_LOCATION_PICKER, SORTING_BUTTONS, SEARCH_OPTIONS_BUTTON, SEARCH_OPTIONS_MODAL, CLEAR_SEARCH_OPTIONS_BUTTON, APPLY_SEARCH_OPTIONS_BUTTON } from "./utils/domRefs.js";
 import { GAME_VERSION, VERSION, VALID_MODES } from "./utils/constants.js";
 import { CONFIG } from "./config/config.js";
 import { lockInteraction, unlockInteraction } from "./utils/interactionLock.js";
 import { trophyImageManager } from "./utils/trophyImageManager.js";
 import { compressTrophySlots, decompressTrophySlots } from "./utils/compressionUtils.js";
 import { toastManager } from "./utils/toastManager.js";
+import { E_VehiclePaintColor, E_TrophyType, E_VehiclePaintColorHumanReadable } from "./utils/mappings.js";
+
+import { carData } from "./carData.js";
+import { MultiSelectDropdown } from "./src/ui/components/MultiSelectDropdown/MultiSelectDropdown.js";
+
+let dropdownBrands = Array.from(new Set(carData.map((car) => car.brand))).map((brand) => {
+  const carsOfBrand = carData.filter((car) => car.brand === brand);
+  return {
+    id: brand.toLowerCase().replace(/\s+/g, "-"),
+    label: brand,
+    meta: `${carsOfBrand.length} ${carsOfBrand.length === 1 ? "model" : "models"}`,
+  };
+});
+
+let dropdownModels = carData.map((car) => {
+  return {
+    id: car.model.toLowerCase().replace(/\s+/g, "-"),
+    label: car.model,
+    meta: `${car.prodStart} - ${car.prodEnd}`,
+  };
+});
+
+const availableYears = Array.from({ length: Math.max(...carData.map((c) => c.prodEnd)) - Math.min(...carData.map((c) => c.prodStart)) + 1 }, (_, i) => Math.min(...carData.map((c) => c.prodStart)) + i);
+const yearModelCount = {};
+
+carData.forEach((car) => {
+  for (let year = car.prodStart; year <= car.prodEnd; year++) {
+    yearModelCount[year] = (yearModelCount[year] || 0) + 1;
+  }
+});
+let dropdownYears = availableYears.map((year) => {
+  return {
+    id: year.toString(),
+    label: year.toString(),
+    meta: `${yearModelCount[year] || 0} ${yearModelCount[year] === 1 ? "model" : "models"}`,
+  };
+});
+
+let dropdownColors = Object.entries(E_VehiclePaintColor).map(([key, value]) => {
+  return {
+    id: value.toLowerCase().replace(/\s+/g, "-"),
+    label: E_VehiclePaintColorHumanReadable[key],
+    meta: "",
+  };
+});
+
+let dropdownTypes = Object.entries(E_TrophyType).map(([key, value]) => {
+  return {
+    id: value.toLowerCase().replace(/\s+/g, "-"),
+    label: value,
+    meta: "",
+  };
+});
+const customStyles = {
+  "--dropdown-background": window.getComputedStyle(document.documentElement).getPropertyValue("--tab-background"),
+  "--dropdown-background-hover": window.getComputedStyle(document.documentElement).getPropertyValue("--tab-background-hover"),
+  "--dropdown-border": window.getComputedStyle(document.documentElement).getPropertyValue("--border"),
+  "--dropdown-text": window.getComputedStyle(document.documentElement).getPropertyValue("--text"),
+  "--dropdown-accent": window.getComputedStyle(document.documentElement).getPropertyValue("--accent"),
+  "--dropdown-shadow": window.getComputedStyle(document.documentElement).getPropertyValue("--shadow"),
+};
+
+const brandsDropdown = new MultiSelectDropdown({
+  items: dropdownBrands,
+  label: "Select Brands",
+  id: "brand-filter-dropdown",
+  customStyles: customStyles,
+});
+const modelsDropdown = new MultiSelectDropdown({
+  items: dropdownModels,
+  label: "Select Models",
+  id: "model-filter-dropdown",
+  customStyles: customStyles,
+});
+const yearsDropdown = new MultiSelectDropdown({
+  items: dropdownYears,
+  label: "Select Years",
+  id: "year-filter-dropdown",
+  customStyles: customStyles,
+});
+const colorsDropdown = new MultiSelectDropdown({
+  items: dropdownColors,
+  label: "Select Colors",
+  id: "color-filter-dropdown",
+  customStyles: customStyles,
+});
+const typesDropdown = new MultiSelectDropdown({
+  items: dropdownTypes,
+  label: "Select Types",
+  id: "type-filter-dropdown",
+  customStyles: customStyles,
+});
+
+SEARCH_OPTIONS_FILTERS.appendChild(brandsDropdown);
+SEARCH_OPTIONS_FILTERS.appendChild(modelsDropdown);
+SEARCH_OPTIONS_FILTERS.appendChild(yearsDropdown);
+SEARCH_OPTIONS_FILTERS.appendChild(colorsDropdown);
+SEARCH_OPTIONS_FILTERS.appendChild(typesDropdown);
+
+CLEAR_SEARCH_OPTIONS_BUTTON.addEventListener("click", () => {
+  brandsDropdown.clearSelections();
+  modelsDropdown.clearSelections();
+  yearsDropdown.clearSelections();
+  colorsDropdown.clearSelections();
+  typesDropdown.clearSelections();
+  for (const button of SORTING_BUTTONS) {
+    button.setAttribute("data-state", "0");
+  }
+  sortHandler.clearSort();
+  toastManager.push("Options cleared", 1500, "success");
+});
+
+APPLY_SEARCH_OPTIONS_BUTTON.addEventListener("click", () => {
+  SEARCH_OPTIONS_MODAL.classList.remove("active");
+  renderSlots(mode, 1, slots, trophyInventory);
+});
 
 let trophyInventory = [];
 let slots = {
@@ -117,15 +233,22 @@ SEARCH_BAR.addEventListener("input", () => {
   }, doneTypingInterval);
 });
 
-import { sortHandler } from "./utils/sortHandler.js";
+SEARCH_OPTIONS_BUTTON.addEventListener("click", () => {
+  SEARCH_OPTIONS_MODAL.classList.toggle("active");
+  window.onclick = (event) => {
+    if (event.target === SEARCH_OPTIONS_MODAL) SEARCH_OPTIONS_MODAL.classList.remove("active");
+  };
+  window.onkeydown = (event) => {
+    if (event.key === "Escape") SEARCH_OPTIONS_MODAL.classList.remove("active");
+  };
+});
 
+import { sortHandler } from "./utils/sortHandler.js";
 for (const button of SORTING_BUTTONS) {
   button.addEventListener("click", () => {
     const property = button.getAttribute("data-sort");
     button.setAttribute("data-state", (parseInt(button.getAttribute("data-state")) + 1) % 3);
     sortHandler.handlePress(property);
-    const _CurrentPage = getPaginationInfo(PAGINATION_CONTROLS).currentPage;
-    renderSlots(mode, _CurrentPage, slots, trophyInventory);
   });
 }
 

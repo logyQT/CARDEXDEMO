@@ -1,0 +1,209 @@
+:host {
+  --dropdown-background: #121212;
+  --dropdown-background-hover: #1f1f1f;
+  --dropdown-accent: #4f9cff;
+  --dropdown-border: #333;
+  --dropdown-border-radius: 10px;
+  --dropdown-text: #e0e0e0;
+  --dropdown-muted: #aaa;
+  --dropdown-shadow: rgba(0, 0, 0, 0.6);
+  --dropdown-scrollbar-thumb: #444;
+  --dropdown-scrollbar-thumb-hover: #555;
+  --dropdown-checkbox-checked-bg: #4f9cff;
+  --dropdown-checkbox-checked-border: #4f9cff;
+  font-family: "JetBrains Mono", monospace;
+  display: inline-block;
+  position: relative;
+}
+
+.dropdown {
+  position: relative;
+  min-width: 280px;
+  background: var(--dropdown-background);
+  color: var(--dropdown-text);
+  border: 1px solid var(--dropdown-border);
+  border-radius: var(--dropdown-border-radius);
+  box-shadow: 0 2px 6px var(--dropdown-shadow);
+}
+
+.dropdown.open {
+  border-radius: var(--dropdown-border-radius) var(--dropdown-border-radius) 0 0;
+}
+
+.dropdown.open .dropdown_button {
+  border-radius: var(--dropdown-border-radius) var(--dropdown-border-radius) 0 0;
+}
+
+.dropdown_button {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.8em 1em;
+  cursor: pointer;
+  border-radius: var(--dropdown-border-radius);
+}
+
+.dropdown:hover {
+  background: var(--dropdown-background-hover);
+}
+
+.dropdown_label {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.dropdown_title {
+  font-weight: 600;
+}
+
+.dropdown_subtitle {
+  font-size: 0.8em;
+  color: var(--dropdown-muted);
+}
+
+.dropdown_chev {
+  width: 1em;
+  height: 1em;
+  transition: transform 0.3s ease;
+  stroke: var(--dropdown-text);
+}
+
+.dropdown.open .dropdown_chev {
+  transform: rotate(180deg);
+}
+
+.menu {
+  background: var(--dropdown-background);
+  border-top: 1px solid var(--dropdown-border);
+  max-height: 300px;
+  overflow-y: auto;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  border-radius: 0 0 var(--dropdown-border-radius) var(--dropdown-border-radius);
+  box-shadow: 0 4px 10px var(--dropdown-shadow);
+  z-index: 1000;
+}
+
+.menu::-webkit-scrollbar {
+  width: 10px;
+}
+.menu::-webkit-scrollbar-thumb {
+  background: var(--dropdown-border);
+  border-radius: 4px;
+}
+
+.search {
+  width: 90%;
+  margin: 0.6em auto;
+  display: block;
+  padding: 0.4em 0.6em;
+  background: var(--dropdown-background-hover);
+  border: 1px solid var(--dropdown-border);
+  color: var(--dropdown-text);
+  border-radius: 6px;
+}
+
+.search:focus {
+  outline: 1px solid var(--dropdown-accent);
+}
+
+.items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6em 1em;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.item:hover {
+  background: var(--dropdown-background-hover);
+}
+
+.item input[type="checkbox"] {
+  display: none;
+}
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--dropdown-border);
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.6em;
+  flex-shrink: 0;
+  transition: background 0.2s, border 0.2s;
+}
+
+.item input[type="checkbox"]:checked + .checkbox {
+  background: var(--dropdown-checkbox-checked-bg);
+  border-color: var(--dropdown-checkbox-checked-border);
+}
+
+.item svg {
+  width: 12px;
+  height: 12px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.item input[type="checkbox"]:checked + .checkbox svg {
+  opacity: 1;
+}
+
+.item-label {
+  flex-grow: 1;
+  cursor: pointer;
+  user-select: none;
+}
+
+.item-meta {
+  font-size: 0.8em;
+  color: var(--dropdown-muted);
+  margin-left: 0.5em;
+  user-select: none;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6em 1em;
+  border-top: 1px solid var(--dropdown-border);
+  background: var(--dropdown-background-hover);
+}
+
+.badge {
+  font-size: 0.8em;
+  color: var(--dropdown-muted);
+}
+
+.btn-clear {
+  background: none;
+  border: 1px solid var(--dropdown-border);
+  border-radius: 4px;
+  color: var(--dropdown-muted);
+  padding: 0.3em 0.6em;
+  cursor: pointer;
+}
+
+.btn-clear:hover {
+  border-color: var(--dropdown-accent);
+  color: var(--dropdown-accent);
+}

@@ -9,8 +9,43 @@ import { smartSearch } from "../modules/search.js";
 
 let currentRenderToken = 0;
 
+const filterVehicleCollection = (collection, attribute, criteriaList) => {
+  const validAttributes = ["brand", "model", "year", "color", "type"];
+  if (!validAttributes.includes(attribute)) {
+    return {};
+  }
+
+  const isNumericAttribute = attribute === "year";
+
+  let criteriaSet;
+
+  if (isNumericAttribute) {
+    criteriaSet = new Set(criteriaList.map((c) => Number(c)));
+  } else {
+    criteriaSet = new Set(criteriaList.map((c) => String(c).toLowerCase().replace(/-/g, " ")));
+  }
+
+  return Object.keys(collection).reduce((filteredCollection, key) => {
+    const vehicleData = collection[key];
+    const vehicleAttributeValue = vehicleData[attribute];
+    let matches = false;
+
+    if (isNumericAttribute) {
+      matches = criteriaSet.has(vehicleAttributeValue);
+    } else {
+      const vehicleValueString = String(vehicleAttributeValue).toLowerCase();
+      matches = criteriaSet.has(vehicleValueString);
+    }
+
+    if (matches) {
+      filteredCollection[key] = vehicleData;
+    }
+
+    return filteredCollection;
+  }, {});
+};
+
 const renderSlots = async (mode, currentPage, allSlots, trophyInventory) => {
-  // const start = performance.now();
   const myToken = ++currentRenderToken;
 
   if (mode === "inventory" && Object.keys(allSlots[mode]).length === 0) {
@@ -21,7 +56,27 @@ const renderSlots = async (mode, currentPage, allSlots, trophyInventory) => {
 
   TROPHY_GRID.innerHTML = "";
 
-  let slots = smartSearch(SEARCH_BAR.value.trim(), allSlots[mode]);
+  const brandsDropdown = document.getElementById("brand-filter-dropdown");
+  const modelsDropdown = document.getElementById("model-filter-dropdown");
+  const yearsDropdown = document.getElementById("year-filter-dropdown");
+  const colorsDropdown = document.getElementById("color-filter-dropdown");
+  const typesDropdown = document.getElementById("type-filter-dropdown");
+
+  const filters = {
+    brand: brandsDropdown.getSelectedItems(),
+    model: modelsDropdown.getSelectedItems(),
+    year: yearsDropdown.getSelectedItems(),
+    color: colorsDropdown.getSelectedItems(),
+    type: typesDropdown.getSelectedItems(),
+  };
+
+  let slots = allSlots[mode];
+  for (const [attribute, criteriaList] of Object.entries(filters)) {
+    if (criteriaList.length === 0) continue;
+    slots = filterVehicleCollection(slots, attribute, criteriaList);
+  }
+
+  slots = smartSearch(SEARCH_BAR.value.trim(), slots);
   slots = sortTrophySlots(slots, sortHandler.getSortParams());
   const slotIDs = Object.keys(slots);
   const totalPages = Math.ceil(slotIDs.length / PAGE_SIZE) || 1;
@@ -117,8 +172,6 @@ const renderSlots = async (mode, currentPage, allSlots, trophyInventory) => {
 
   animateCards(NEW_TROPHY_ELEMENTS);
   disableDrag(NEW_TROPHY_ELEMENTS);
-  // const end = performance.now();
-  // console.log(`Rendered page ${currentPage} with ${pageSlots.length} trophies in ${(end - start).toFixed(2)} ms`);
 };
 
 export { renderSlots };

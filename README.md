@@ -87,3 +87,9 @@ Thanks also to **duckobread**, the community manager, for approving the release 
 ### 2.0.9
 
 - Implemented sorting functionality
+
+### 2.1.0
+
+- Enhanced the overall UI aesthetic
+- Introduced powerful new filtering and a dedicated, combined sort/filter modal.
+- Temporiarly disabled JSON save data export/import.
