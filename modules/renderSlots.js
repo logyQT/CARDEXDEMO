@@ -10,20 +10,25 @@ import { smartSearch } from "../modules/search.js";
 let currentRenderToken = 0;
 
 const filterVehicleCollection = (collection, attribute, criteriaList) => {
-  const validAttributes = ["brand", "model", "year", "color", "type"];
+  const validAttributes = ["brand", "model", "year", "color", "type", "owned"];
   if (!validAttributes.includes(attribute)) {
     return {};
   }
 
   const isNumericAttribute = attribute === "year";
+  const isBooleanAttribute = attribute === "owned";
 
   let criteriaSet;
 
   if (isNumericAttribute) {
     criteriaSet = new Set(criteriaList.map((c) => Number(c)));
+  } else if (isBooleanAttribute) {
+    criteriaSet = new Set(criteriaList.map((c) => c === "true"));
   } else {
     criteriaSet = new Set(criteriaList.map((c) => String(c).toLowerCase().replace(/-/g, " ")));
   }
+
+  console.log(criteriaSet);
 
   return Object.keys(collection).reduce((filteredCollection, key) => {
     const vehicleData = collection[key];
@@ -32,6 +37,8 @@ const filterVehicleCollection = (collection, attribute, criteriaList) => {
 
     if (isNumericAttribute) {
       matches = criteriaSet.has(vehicleAttributeValue);
+    } else if (isBooleanAttribute) {
+      matches = criteriaSet.has(Boolean(vehicleAttributeValue));
     } else {
       const vehicleValueString = String(vehicleAttributeValue).toLowerCase();
       matches = criteriaSet.has(vehicleValueString);
@@ -61,6 +68,7 @@ const renderSlots = async (mode, currentPage, allSlots, trophyInventory) => {
   const yearsDropdown = document.getElementById("year-filter-dropdown");
   const colorsDropdown = document.getElementById("color-filter-dropdown");
   const typesDropdown = document.getElementById("type-filter-dropdown");
+  const ownedDropdown = document.getElementById("owned-filter-dropdown");
 
   const filters = {
     brand: brandsDropdown.getSelectedItems(),
@@ -68,6 +76,7 @@ const renderSlots = async (mode, currentPage, allSlots, trophyInventory) => {
     year: yearsDropdown.getSelectedItems(),
     color: colorsDropdown.getSelectedItems(),
     type: typesDropdown.getSelectedItems(),
+    owned: ownedDropdown.getSelectedItems(),
   };
 
   let slots = allSlots[mode];

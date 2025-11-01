@@ -1,4 +1,4 @@
-import { renderStats, getStats, createInternalSaveData, getPaginationInfo, sortTrophies, generateRandomTrophy, getSaveObject, getDatabase, disableDrag, generateAllTrophySlots, saveToLocalStorage, loadFromLocalStorage, validateInternalSaveData, removeFromLocalStorage, exportToJSON, importFromJSON, updateTrophyProgress, getAllTrophies, updateOverallTrophyProgress, autoFillTrophySlots, renderSlots, smartSearch } from "./modules/index.js";
+import { renderStats, getStats, createInternalSaveData, getPaginationInfo, sortTrophies, getSaveObject, getDatabase, disableDrag, generateAllTrophySlots, saveToLocalStorage, loadFromLocalStorage, validateInternalSaveData, removeFromLocalStorage, exportToJSON, importFromJSON, updateTrophyProgress, getAllTrophies, updateOverallTrophyProgress, autoFillTrophySlots, renderSlots } from "./modules/index.js";
 import { SEARCH_OPTIONS_FILTERS, IMPORT_SAVE_FILE_INPUT, SHARE_BUTTON, IMPORT_SAVE_FILE_BUTTON, PROGRESS_BAR, PROGRESS_BAR_TEXT, PAGINATION_CONTROLS, VERSION_TEXT, RESET_BUTTON, IMPORT_JSON_BUTTON, DOWNLOAD_JSON_BUTTON, TROPHY_AUTOFILL_BUTTON, ADD_TROPHY_BUTTON, SEARCH_BAR, TROPHY_GRID, COPY_SHARE_LINK_BUTTON, CLOSE_SHARE_LINK_BUTTON, SHARE_LINK_CONTAINER, SHARE_LINK_INPUT, AUTOUPDATE_LOCATION_PICKER, SORTING_BUTTONS, SEARCH_OPTIONS_BUTTON, SEARCH_OPTIONS_MODAL, CLEAR_SEARCH_OPTIONS_BUTTON, APPLY_SEARCH_OPTIONS_BUTTON } from "./utils/domRefs.js";
 import { GAME_VERSION, VERSION, VALID_MODES } from "./utils/constants.js";
 import { CONFIG } from "./config/config.js";
@@ -59,6 +59,20 @@ let dropdownTypes = Object.entries(E_TrophyType).map(([key, value]) => {
     meta: "",
   };
 });
+
+let dropdownOwned = [
+  {
+    id: "true",
+    label: "Owned",
+    meta: "",
+  },
+  {
+    id: "false",
+    label: "Missing",
+    meta: "",
+  },
+];
+
 const customStyles = {
   "--dropdown-background": window.getComputedStyle(document.documentElement).getPropertyValue("--tab-background"),
   "--dropdown-background-hover": window.getComputedStyle(document.documentElement).getPropertyValue("--tab-background-hover"),
@@ -98,12 +112,19 @@ const typesDropdown = new MultiSelectDropdown({
   id: "type-filter-dropdown",
   customStyles: customStyles,
 });
+const ownedDropdown = new MultiSelectDropdown({
+  items: dropdownOwned,
+  label: "Select Ownership",
+  id: "owned-filter-dropdown",
+  customStyles: customStyles,
+});
 
 SEARCH_OPTIONS_FILTERS.appendChild(brandsDropdown);
 SEARCH_OPTIONS_FILTERS.appendChild(modelsDropdown);
 SEARCH_OPTIONS_FILTERS.appendChild(yearsDropdown);
 SEARCH_OPTIONS_FILTERS.appendChild(colorsDropdown);
 SEARCH_OPTIONS_FILTERS.appendChild(typesDropdown);
+SEARCH_OPTIONS_FILTERS.appendChild(ownedDropdown);
 
 CLEAR_SEARCH_OPTIONS_BUTTON.addEventListener("click", () => {
   brandsDropdown.clearSelections();
@@ -111,6 +132,7 @@ CLEAR_SEARCH_OPTIONS_BUTTON.addEventListener("click", () => {
   yearsDropdown.clearSelections();
   colorsDropdown.clearSelections();
   typesDropdown.clearSelections();
+  ownedDropdown.clearSelections();
   for (const button of SORTING_BUTTONS) {
     button.setAttribute("data-state", "0");
   }
