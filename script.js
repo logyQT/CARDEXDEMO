@@ -7,6 +7,11 @@ import { trophyImageManager } from "./utils/trophyImageManager.js";
 import { compressTrophySlots, decompressTrophySlots } from "./utils/compressionUtils.js";
 import { toastManager } from "./utils/toastManager.js";
 import { E_VehiclePaintColor, E_TrophyType, E_VehiclePaintColorHumanReadable } from "./utils/mappings.js";
+import { encodeData, decodeData } from "./src/compression/compression.js";
+import { folderWatchdog } from "./src/autoUpdate/folderWatchdog.js";
+import { autoUpdate } from "./src/autoUpdate/autoUpdate.js";
+import { cSaveObject } from "./src/autoUpdate/cSaveObject.js";
+import { getDirHandle, saveDirHandle } from "./src/autoUpdate/fsHandler.js";
 
 import { carData } from "./carData.js";
 import { MultiSelectDropdown } from "./src/ui/components/MultiSelectDropdown/MultiSelectDropdown.js";
@@ -235,7 +240,6 @@ IMPORT_JSON_BUTTON.addEventListener("change", (event) => {
 RESET_BUTTON.addEventListener("click", () => {
   removeFromLocalStorage("internalSaveData");
   trophyInventory = [];
-  mode = "model";
   for (const mode in slots) {
     slots[mode] = generateAllTrophySlots(mode, trophyInventory);
   }
@@ -300,11 +304,6 @@ IMPORT_SAVE_FILE_INPUT.addEventListener("change", async (event) => {
   });
 });
 
-import { folderWatchdog } from "./utils/autoUpdate/folderWatchdog.js";
-import { autoUpdate } from "./utils/autoUpdate/autoUpdate.js";
-import { cSaveObject } from "./utils/autoUpdate/cSaveObject.js";
-import { getDirHandle, saveDirHandle } from "./utils/fsHandler.js";
-
 const update = async (res) => {
   if (!res || !res.handle) return;
   toastManager.push("Changes detected...", 2000, "sync");
@@ -354,59 +353,25 @@ SHARE_BUTTON.addEventListener("click", async () => {
       .filter(([m]) => m !== "inventory")
       .reduce((a, [, s]) => a + Object.values(s).filter((v) => v.owned).length, 0) === 0
   ) {
-    alert("Cannot generate shareable link with no trophies slotted.");
+    toastManager.push("Cannot generate shareable link with no trophies slotted.", 4000, "error");
     return;
   }
 
-  lockInteraction();
-  async function generateCardexUrl(slots) {
-    const json = {
-      slots: {
-        0: compressTrophySlots(slots.model),
-        1: compressTrophySlots(slots.year),
-        2: compressTrophySlots(slots.color),
-        3: compressTrophySlots(slots.type),
-      },
-      v: VERSION,
-    };
-    const jsonStr = JSON.stringify(json);
-    const compressed = LZString.compressToEncodedURIComponent(jsonStr);
-    const saveStr = `#${compressed}`;
+  window.onclick = (event) => {
+    if (event.target === SHARE_LINK_CONTAINER) SHARE_LINK_CONTAINER.classList.remove("active");
+  };
+  window.onkeydown = (event) => {
+    if (event.key === "Escape") SHARE_LINK_CONTAINER.classList.remove("active");
+  };
 
-    async function getLink(str) {
-      try {
-        const response = await fetch(`${CONFIG.API_URL}/api/addItem`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ str: str }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        const result = await response.json();
-        return result;
-      } catch (err) {
-        console.error("Failed to add item:", err);
-      }
-    }
-
-    const result = await getLink(saveStr);
-    if (result && result?.data?.id) {
-      unlockInteraction();
-      return `https://logyqt.github.io/CARDEXDEMO/#${result.data.id}`;
-    } else {
-      unlockInteraction();
-      return "Failed to generate shareable link. Please try again later.";
-    }
+  function generateURL() {
+    const str = encodeData(slots);
+    return window.location.origin + window.location.pathname + `#${str}`;
   }
 
-  SHARE_LINK_CONTAINER.style.display = "flex";
+  SHARE_LINK_CONTAINER.classList.add("active");
   SHARE_LINK_INPUT.value = "Generating link, please wait...";
-  SHARE_LINK_INPUT.value = await generateCardexUrl(slots);
+  SHARE_LINK_INPUT.value = generateURL();
 
   COPY_SHARE_LINK_BUTTON.onclick = () => {
     navigator.clipboard.writeText(SHARE_LINK_INPUT.value).then(
@@ -420,7 +385,7 @@ SHARE_BUTTON.addEventListener("click", async () => {
     );
   };
   CLOSE_SHARE_LINK_BUTTON.onclick = () => {
-    SHARE_LINK_CONTAINER.style.display = "none";
+    SHARE_LINK_CONTAINER.classList.remove("active");
   };
 });
 
@@ -441,55 +406,20 @@ const loadFromLocal = () => {
   renderSlots(mode, 1, slots, trophyInventory);
 };
 
-const fetchSharedData = async (id) => {
-  const response = await fetch(`${CONFIG.API_URL}/api/getItem/?id=${id}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-  if (!response.ok) {
-    throw new Error(`HTTP error! Status: ${response.status}`);
-  }
-  return await response.json();
-};
-
 if (window.location.hash && window.location.hash.length > 1) {
-  lockInteraction();
   TROPHY_GRID.innerHTML = `<p style="text-align: center; font-size: 1.2em; color: #666; grid-column: 1/-1">Loading shared data, please wait...</p>`;
   const hash = window.location.hash.substring(1);
-  let fetchedData;
+  let decodedData;
 
   try {
-    fetchedData = await fetchSharedData(hash);
+    decodedData = decodeData(hash);
+    slots = decodedData;
+    renderSlots(mode, 1, slots, trophyInventory);
+    window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+    toastManager.push("Shared data loaded successfully!", 4000, "success");
   } catch (err) {
-    console.error("Error fetching shared data:", err);
-    unlockInteraction();
-  }
-
-  if (fetchedData && fetchedData?.data?.str) {
-    const decompressed = LZString.decompressFromEncodedURIComponent(fetchedData.data.str.slice(1));
-    window.location.hash = "";
-    if (JSON.parse(decompressed).v === VERSION) {
-      const parsed = JSON.parse(decompressed);
-
-      slots = {
-        model: decompressTrophySlots(parsed.slots["0"]),
-        year: decompressTrophySlots(parsed.slots["1"]),
-        color: decompressTrophySlots(parsed.slots["2"]),
-        type: decompressTrophySlots(parsed.slots["3"]),
-        inventory: slots.inventory,
-      };
-      unlockInteraction();
-      renderSlots(mode, 1, slots, trophyInventory);
-    } else {
-      unlockInteraction();
-      loadFromLocal();
-      alert("The shared data version is incompatible with the current app version.");
-    }
-  } else {
+    toastManager.push("Error decoding shared data.", 4000, "error");
     loadFromLocal();
-    alert("Failed to load shared data. The link may be invalid or the data has been removed.");
   }
 } else {
   loadFromLocal();
@@ -497,5 +427,3 @@ if (window.location.hash && window.location.hash.length > 1) {
 
 updateTrophyProgress(slots, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
 disableDrag(document.querySelectorAll("*"));
-trophyImageManager.registerAll();
-trophyImageManager.preloadAll();

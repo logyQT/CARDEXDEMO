@@ -93,3 +93,8 @@ Thanks also to **duckobread**, the community manager, for approving the release 
 - Enhanced the overall UI aesthetic
 - Introduced powerful new filtering and a dedicated, combined sort/filter modal.
 - Temporiarly disabled JSON save data export/import.
+
+### 2.1.1
+
+- Added the **UMX 700R** trophy.
+- Reworked how the share links work.

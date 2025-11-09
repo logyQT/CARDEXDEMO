@@ -5,7 +5,7 @@ export * from "./updateProgressBar.js";
 export * from "./generateAllTrophySlots.js";
 export * from "./getMatchingItemsInInventory.js";
 export * from "./getDatabase.js";
-export * from "./walkObjectParseJson.js";
+export * from "../src/utils/walkObjectParseJson.js";
 export * from "./getSaveObject.js";
 export * from "./matchTrophy.js";
 export * from "./getMatchingTrophies.js";

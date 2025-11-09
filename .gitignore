@@ -1,12 +1,5 @@
 /.VSCodeCounter/
 /.vscode/
-/test.json
 /.gitattributes
-/TODO.txt
-/node_modules/
-/test.html
-/test2.html
-/test3.html
-/README.pdf
-/docs/SaveSync/SaveSync.md
-cleanString.js
+/tests/
+/temp/

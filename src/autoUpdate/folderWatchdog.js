@@ -1,4 +1,4 @@
-import { toastManager } from "../toastManager.js";
+import { toastManager } from "../../utils/toastManager.js";
 import { autoUpdate } from "./autoUpdate.js";
 
 class FolderWatchdog {

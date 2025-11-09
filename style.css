@@ -532,7 +532,7 @@ input.hidden {
   height: 100%;
   z-index: 100;
 }
-#share-link-container {
+/* #share-link-container {
   position: fixed;
   top: 0;
   left: 0;
@@ -544,9 +544,10 @@ input.hidden {
   justify-content: center;
   align-items: center;
   z-index: 2000;
-}
+} */
 #share-link-box {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--panel-background);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 16px;
   display: flex;
@@ -555,24 +556,32 @@ input.hidden {
   width: 90%;
   max-width: 600px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  transform: translateY(100%);
+  transition: transform 0.3s ease-in-out;
+}
+.modal.active #share-link-box {
+  transform: scale(1);
 }
 #share-link-text {
   font-size: 1.2rem;
-  color: whitesmoke;
+  color: var(--accent);
 }
 #share-link-input {
   width: 100%;
   padding: 8px 12px;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.03);
-  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+  background: var(--tab-background);
   color: inherit;
   font-size: 1rem;
 }
+#share-link-input:focus {
+  outline: 2px solid var(--accent);
+}
 #copy-share-link-btn,
 #close-share-link-btn {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  background: var(--tab-background);
+  border: 1px solid var(--border);
   padding: 8px 16px;
   border-radius: 8px;
   color: inherit;
@@ -581,6 +590,10 @@ input.hidden {
   user-select: none;
   font-size: 1rem;
   font-weight: 600;
+}
+#copy-share-link-btn:hover,
+#close-share-link-btn:hover {
+  background: var(--tab-background-hover);
 }
 #interaction-lock {
   position: fixed;

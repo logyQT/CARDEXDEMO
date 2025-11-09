@@ -28,8 +28,6 @@ const filterVehicleCollection = (collection, attribute, criteriaList) => {
     criteriaSet = new Set(criteriaList.map((c) => String(c).toLowerCase().replace(/-/g, " ")));
   }
 
-  console.log(criteriaSet);
-
   return Object.keys(collection).reduce((filteredCollection, key) => {
     const vehicleData = collection[key];
     const vehicleAttributeValue = vehicleData[attribute];

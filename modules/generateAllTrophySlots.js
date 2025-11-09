@@ -29,7 +29,7 @@ const generateAllTrophySlots = (mode, trophyInventory = []) => {
     }
   });
   if (mode === "inventory") {
-    if (trophyInventory.length === 0) return;
+    if (trophyInventory.length === 0) return {};
     trophyInventory.forEach((trophy) => {
       let slot = { name: `${trophy.brand} ${trophy.model}`, year: trophy.year, color: trophy.color, type: trophy.type, owned: true, brand: trophy.brand, model: trophy.model };
       const slotID = generateID(mode, slot);
