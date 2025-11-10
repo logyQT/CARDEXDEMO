@@ -64,8 +64,8 @@ export function packTrophyData(key, item) {
   const modeID = MODE_MAP[_mode];
   const carKey = item.brand + "|" + item.model;
   const carID = CAR_ID_MAP[carKey] || 0;
-  const colorID = COLOR_MAP[item.color] || NULL_ID;
   const typeID = TYPE_MAP[item.type] || NULL_ID;
+  const colorID = typeID > 1 ? NULL_ID : COLOR_MAP[item.color] ?? NULL_ID;
 
   let yearOffset = 0;
   let yearNullFlag = 0;
@@ -106,7 +106,7 @@ export function unpackData(packed) {
   const type = typeID === NULL_ID ? null : REVERSE_CAT_MAPS.type[typeID];
   const mode = REVERSE_CAT_MAPS.mode[modeID];
 
-  const isOwned = color !== null && year !== null && type !== null;
+  const isOwned = year !== null && type !== null;
 
   function keysFromMode(mode, carData) {
     const _mode = mode.toLowerCase();

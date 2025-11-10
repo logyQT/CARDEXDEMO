@@ -1,10 +1,6 @@
 import { renderStats, getStats, createInternalSaveData, getPaginationInfo, sortTrophies, getSaveObject, getDatabase, disableDrag, generateAllTrophySlots, saveToLocalStorage, loadFromLocalStorage, validateInternalSaveData, removeFromLocalStorage, exportToJSON, importFromJSON, updateTrophyProgress, getAllTrophies, updateOverallTrophyProgress, autoFillTrophySlots, renderSlots } from "./modules/index.js";
 import { SEARCH_OPTIONS_FILTERS, IMPORT_SAVE_FILE_INPUT, SHARE_BUTTON, IMPORT_SAVE_FILE_BUTTON, PROGRESS_BAR, PROGRESS_BAR_TEXT, PAGINATION_CONTROLS, VERSION_TEXT, RESET_BUTTON, IMPORT_JSON_BUTTON, DOWNLOAD_JSON_BUTTON, TROPHY_AUTOFILL_BUTTON, ADD_TROPHY_BUTTON, SEARCH_BAR, TROPHY_GRID, COPY_SHARE_LINK_BUTTON, CLOSE_SHARE_LINK_BUTTON, SHARE_LINK_CONTAINER, SHARE_LINK_INPUT, AUTOUPDATE_LOCATION_PICKER, SORTING_BUTTONS, SEARCH_OPTIONS_BUTTON, SEARCH_OPTIONS_MODAL, CLEAR_SEARCH_OPTIONS_BUTTON, APPLY_SEARCH_OPTIONS_BUTTON } from "./utils/domRefs.js";
 import { GAME_VERSION, VERSION, VALID_MODES } from "./utils/constants.js";
-import { CONFIG } from "./config/config.js";
-import { lockInteraction, unlockInteraction } from "./utils/interactionLock.js";
-import { trophyImageManager } from "./utils/trophyImageManager.js";
-import { compressTrophySlots, decompressTrophySlots } from "./utils/compressionUtils.js";
 import { toastManager } from "./utils/toastManager.js";
 import { E_VehiclePaintColor, E_TrophyType, E_VehiclePaintColorHumanReadable } from "./utils/mappings.js";
 import { encodeData, decodeData } from "./src/compression/compression.js";
@@ -160,6 +156,7 @@ let slots = {
 };
 let stats = {};
 let mode = "model"; // Default mode
+let preview = false;
 
 // Load and read save file
 
@@ -202,6 +199,7 @@ tabs.forEach((tab) => {
     if (mode === "stats") renderStats(stats, 1);
     else renderSlots(mode, 1, slots, trophyInventory);
     updateTrophyProgress(slots, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
+    if (preview) return;
     const internalSaveData = createInternalSaveData(VERSION, slots, trophyInventory, stats);
     saveToLocalStorage("internalSaveData", internalSaveData);
   });
@@ -417,8 +415,20 @@ if (window.location.hash && window.location.hash.length > 1) {
     renderSlots(mode, 1, slots, trophyInventory);
     window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
     toastManager.push("Shared data loaded successfully!", 4000, "success");
+    preview = true;
+    const div = document.createElement("div");
+    div.style.position = "absolute";
+    div.style.top = "-1rem";
+    div.style.left = "50%";
+    div.style.transform = "translateX(-50%)";
+    div.style.color = "var(--muted)";
+    div.textContent = "Preview Mode: Changes will not be saved. Reload the page to load local data.";
+    document.getElementById("app").style.position = "relative";
+    document.getElementById("app").appendChild(div);
   } catch (err) {
+    console.error("Error decoding shared data:", err);
     toastManager.push("Error decoding shared data.", 4000, "error");
+    window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
     loadFromLocal();
   }
 } else {
