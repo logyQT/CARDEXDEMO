@@ -14,6 +14,7 @@ const carData = [
   { name: "Off Rider Boulder", prodStart: 1985, prodEnd: 1995, brand: "Off Rider", model: "Boulder" },
   { name: "Off Rider Canyon", prodStart: 1986, prodEnd: 1995, brand: "Off Rider", model: "Canyon" },
   { name: "Off Rider Ridge", prodStart: 1980, prodEnd: 1986, brand: "Off Rider", model: "Ridge" },
+  { name: "Off Rider Trail", prodStart: 1980, prodEnd: 1986, brand: "Off Rider", model: "Trail" },
   { name: "Phantom Cortega", prodStart: 1975, prodEnd: 1979, brand: "Phantom", model: "Cortega" },
   { name: "Phantom Gale", prodStart: 1980, prodEnd: 1990, brand: "Phantom", model: "Gale" },
   { name: "Phantom Thunder", prodStart: 1995, prodEnd: 2000, brand: "Phantom", model: "Thunder" },

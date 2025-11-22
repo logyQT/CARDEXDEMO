@@ -98,3 +98,7 @@ Thanks also to **duckobread**, the community manager, for approving the release 
 
 - Added the **UMX 700R** trophy.
 - Reworked how the share links work.
+
+### 2.1.2
+
+- Added the **Off-Rider Trail** trophy.

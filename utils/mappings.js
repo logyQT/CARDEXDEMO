@@ -37,6 +37,7 @@ const E_CarModel = {
   NewEnumerator23: "Outrider",
   NewEnumerator24: "800C",
   NewEnumerator25: "700R",
+  NewEnumerator27: "Trail",
 };
 
 const E_VehiclePaintColor = {

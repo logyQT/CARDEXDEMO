@@ -532,19 +532,6 @@ input.hidden {
   height: 100%;
   z-index: 100;
 }
-/* #share-link-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
-} */
 #share-link-box {
   background: var(--panel-background);
   border: 1px solid var(--border);
