@@ -23,6 +23,7 @@ const carData = [
   { name: "UMX 600C", prodStart: 1980, prodEnd: 1989, brand: "UMX", model: "600C" },
   { name: "UMX 700R", prodStart: 1995, prodEnd: 2005, brand: "UMX", model: "700R" },
   { name: "UMX 800C", prodStart: 2000, prodEnd: 2010, brand: "UMX", model: "800C" },
+  { name: "Zen Motors Ascend", prodStart: 2000, prodEnd: 2010, brand: "Zen Motors", model: "Ascend" },
   { name: "Zen Motors Journey", prodStart: 1998, prodEnd: 2006, brand: "Zen Motors", model: "Journey" },
 ];
 
