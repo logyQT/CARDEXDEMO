@@ -1,7 +1,7 @@
 import { carData } from "../../carData.js";
 import { VERSION } from "../../utils/constants.js";
 
-const BASE_YEAR = 1975;
+const BASE_YEAR = 1970;
 const NULL_ID = 0;
 
 const COLOR_MAP = { Black: 1, Silver: 2, Red: 3, Blue: 4, Purple: 5, NavyBlue: 6, White: 7, Gray: 8, Gold: 9, Green: 10, Brown: 11, Orange: 12, Yellow: 13, Graphite: 14, "Light-Blue": 15, "Light-Green": 16 };

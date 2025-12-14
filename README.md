@@ -106,3 +106,7 @@ Thanks also to **duckobread**, the community manager, for approving the release 
 ### 2.1.3
 
 - Added the **Zen Motors Ascend** trophy.
+
+### 2.1.4
+
+- Added the **Ardena Ventus** trophy.

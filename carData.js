@@ -2,6 +2,7 @@ const carData = [
   { name: "Apex Motors Striker", prodStart: 1982, prodEnd: 1992, brand: "Apex Motors", model: "Striker" },
   { name: "Apex Motors Vanguard", prodStart: 1982, prodEnd: 1992, brand: "Apex Motors", model: "Vanguard" },
   { name: "Ardena Ignis", prodStart: 2000, prodEnd: 2010, brand: "Ardena", model: "Ignis" },
+  { name: "Ardena Ventus", prodStart: 1970, prodEnd: 1980, brand: "Ardena", model: "Ventus" },
   { name: "Aurora Outrider", prodStart: 1990, prodEnd: 2000, brand: "Aurora", model: "Outrider" },
   { name: "Cargo Wise P2", prodStart: 1982, prodEnd: 1989, brand: "Cargo Wise", model: "P2" },
   { name: "Cargo Wise P3", prodStart: 1998, prodEnd: 2010, brand: "Cargo Wise", model: "P3" },
