@@ -4,7 +4,7 @@ import { COLOR_LOOKUP } from "../data/index.js";
 import { TROPHY_GRID, PAGINATION_CONTROLS, MODAL_PAGINATION_CONTROLS, SLOT_TROPHY_MODAL, SEARCH_BAR } from "../domRefs.js";
 import { toastManager } from "../toastManager.js";
 import { sortTrophies, sortTrophySlots } from "../core/trophySorting.js";
-import { smartSearch } from "../core/search.js";
+import { smartSearch, filterTrophySlots } from "../core/search.js";
 import { getMatchingTrophies } from "../core/trophyMatching.js";
 import { parseSlotID } from "../core/trophyParsing.js";
 import { sortHandler } from "../sortHandler.js";
@@ -62,30 +62,6 @@ const createCard = ({ cssClass, showMatchCount, text, brand, model, color, type,
   return card;
 };
 
-const filterVehicleCollection = (collection, attribute, criteriaList) => {
-  const validAttributes = ["brand", "model", "year", "color", "type", "owned"];
-  if (!validAttributes.includes(attribute)) return {};
-
-  const isNumeric = attribute === "year";
-  const isBoolean = attribute === "owned";
-  const criteriaSet = isNumeric
-    ? new Set(criteriaList.map((c) => Number(c)))
-    : isBoolean
-      ? new Set(criteriaList.map((c) => c === "true"))
-      : new Set(criteriaList.map((c) => String(c).toLowerCase().replace(/-/g, " ")));
-
-  return Object.keys(collection).reduce((filtered, key) => {
-    const value = collection[key][attribute];
-    const matches = isNumeric
-      ? criteriaSet.has(value)
-      : isBoolean
-        ? criteriaSet.has(Boolean(value))
-        : criteriaSet.has(String(value).toLowerCase());
-    if (matches) filtered[key] = collection[key];
-    return filtered;
-  }, {});
-};
-
 const getSlotFilters = () => {
   const ids = ["brand-filter-dropdown", "model-filter-dropdown", "year-filter-dropdown", "color-filter-dropdown", "type-filter-dropdown", "owned-filter-dropdown"];
   return Object.fromEntries(ids.map((id) => [id.split("-")[0], document.getElementById(id).getSelectedItems()]));
@@ -117,11 +93,7 @@ const renderSlots = async (mode, currentPage, allSlots, trophyInventory) => {
 
   TROPHY_GRID.innerHTML = "";
 
-  let filtered = allSlots[mode];
-  for (const [attribute, criteriaList] of Object.entries(getSlotFilters())) {
-    if (criteriaList.length === 0) continue;
-    filtered = filterVehicleCollection(filtered, attribute, criteriaList);
-  }
+  let filtered = filterTrophySlots(allSlots[mode], getSlotFilters());
   filtered = smartSearch(SEARCH_BAR.value.trim(), filtered);
   filtered = sortTrophySlots(filtered, sortHandler.getSortParams());
 

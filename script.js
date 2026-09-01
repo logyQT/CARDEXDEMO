@@ -10,7 +10,7 @@ import { generateAllTrophySlots, autoFillTrophySlots } from "./src/core/trophySl
 import { getAllTrophies } from "./src/persistence/getAllTrophies.js";
 import { getSaveObject } from "./src/persistence/getSaveObject.js";
 import { updateTrophyProgress, updateOverallTrophyProgress } from "./src/core/progress.js";
-import { IMPORT_SAVE_FILE_INPUT, SHARE_BUTTON, IMPORT_SAVE_FILE_BUTTON, PROGRESS_BAR, PROGRESS_BAR_TEXT, PAGINATION_CONTROLS, VERSION_TEXT, RESET_BUTTON, IMPORT_JSON_BUTTON, DOWNLOAD_JSON_BUTTON, TROPHY_AUTOFILL_BUTTON, ADD_TROPHY_BUTTON, SEARCH_BAR, TROPHY_GRID, COPY_SHARE_LINK_BUTTON, CLOSE_SHARE_LINK_BUTTON, SHARE_LINK_CONTAINER, SHARE_LINK_INPUT, AUTOUPDATE_LOCATION_PICKER, SORTING_BUTTONS, SEARCH_OPTIONS_BUTTON, SEARCH_OPTIONS_MODAL, SEARCH_OPTIONS_FILTERS, CLEAR_SEARCH_OPTIONS_BUTTON, APPLY_SEARCH_OPTIONS_BUTTON } from "./src/domRefs.js";
+import { IMPORT_SAVE_FILE_INPUT, SHARE_BUTTON, IMPORT_SAVE_FILE_BUTTON, PAGINATION_CONTROLS, VERSION_TEXT, RESET_BUTTON, IMPORT_JSON_BUTTON, DOWNLOAD_JSON_BUTTON, TROPHY_AUTOFILL_BUTTON, SEARCH_BAR, TROPHY_GRID, COPY_SHARE_LINK_BUTTON, CLOSE_SHARE_LINK_BUTTON, SHARE_LINK_CONTAINER, SHARE_LINK_INPUT, AUTOUPDATE_LOCATION_PICKER, SORTING_BUTTONS, SEARCH_OPTIONS_BUTTON, SEARCH_OPTIONS_MODAL, SEARCH_OPTIONS_FILTERS, CLEAR_SEARCH_OPTIONS_BUTTON, APPLY_SEARCH_OPTIONS_BUTTON } from "./src/domRefs.js";
 import { GAME_VERSION, VERSION, VALID_MODES } from "./src/constants.js";
 import { toastManager } from "./src/toastManager.js";
 import { E_VehiclePaintColor, E_TrophyType, E_VehiclePaintColorHumanReadable, cars as carData } from "./src/data/index.js";
@@ -209,7 +209,7 @@ tabs.forEach((tab) => {
     SEARCH_BAR.value = "";
     if (mode === "stats") renderStats(stats, 1);
     else renderSlots(mode, 1, slots, trophyInventory);
-    updateTrophyProgress(slots, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
+    updateTrophyProgress({ slots, mode });
     if (preview) return;
     const internalSaveData = createInternalSaveData(VERSION, slots, trophyInventory, stats);
     saveToLocalStorage("internalSaveData", internalSaveData);
@@ -225,7 +225,7 @@ TROPHY_AUTOFILL_BUTTON.addEventListener("click", () => {
   slots = autoFillTrophySlots(slots, trophyInventory);
   const _CurrentPage = getPaginationInfo(PAGINATION_CONTROLS).currentPage;
   renderSlots(mode, _CurrentPage, slots, trophyInventory);
-  updateTrophyProgress(slots, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
+  updateTrophyProgress({ slots, mode });
 });
 
 DOWNLOAD_JSON_BUTTON.addEventListener("click", () => {
@@ -241,7 +241,7 @@ IMPORT_JSON_BUTTON.addEventListener("change", (event) => {
       trophyInventory = data.trophyInventory;
       const _CurrentPage = getPaginationInfo(PAGINATION_CONTROLS).currentPage;
       renderSlots(mode, _CurrentPage, slots, trophyInventory);
-      updateTrophyProgress(slots, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
+      updateTrophyProgress({ slots, mode });
     });
   }
 });
@@ -253,7 +253,7 @@ RESET_BUTTON.addEventListener("click", () => {
     slots[mode] = generateAllTrophySlots(mode, trophyInventory);
   }
   renderSlots(mode, 1, slots, trophyInventory);
-  updateTrophyProgress(slots, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
+  updateTrophyProgress({ slots, mode });
   toastManager.push("Save data reset to default.", 3000, "success");
 });
 
@@ -304,7 +304,7 @@ IMPORT_SAVE_FILE_INPUT.addEventListener("change", async (event) => {
   mode = "inventory";
   slots[mode] = generateAllTrophySlots(mode, trophyInventory);
   renderSlots(mode, 1, slots, trophyInventory);
-  updateOverallTrophyProgress(slots, PROGRESS_BAR_TEXT, PROGRESS_BAR);
+  updateOverallTrophyProgress({ slots });
   tabs.forEach((tab) => {
     if (!tab.getAttribute("data-mode")) return;
     tabs.forEach((t) => t.classList.remove("active"));
@@ -324,7 +324,7 @@ const update = async (res) => {
   slots["inventory"] = generateAllTrophySlots("inventory", trophyInventory);
   slots = autoFillTrophySlots(slots, trophyInventory);
   const _CurrentPage = getPaginationInfo(PAGINATION_CONTROLS).currentPage;
-  updateTrophyProgress(slots, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
+  updateTrophyProgress({ slots, mode });
   renderSlots(mode, _CurrentPage, slots, trophyInventory);
   const internalSaveData = createInternalSaveData(VERSION, slots, trophyInventory, stats);
   saveToLocalStorage("internalSaveData", internalSaveData);
@@ -445,5 +445,5 @@ if (window.location.hash && window.location.hash.length > 1) {
   loadFromLocal();
 }
 
-updateTrophyProgress(slots, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR);
+updateTrophyProgress({ slots, mode });
 disableDrag(document.querySelectorAll("*"));

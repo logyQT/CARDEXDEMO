@@ -124,15 +124,6 @@ const E_TrophyType = {
   NewEnumerator4: "Rust",
 };
 
-const E_CarDexMode = {
-  NewEnumerator0: "model",
-  NewEnumerator1: "year",
-  NewEnumerator2: "color",
-  NewEnumerator3: "type",
-  NewEnumerator4: "inventory",
-};
-
-const TrophyTypeOrder = ["Common", "Silver", "Gold", "Diamond", "Rust"];
 const typePriority = { diamond: 5, gold: 4, silver: 3, rust: 2, common: 1 };
 
 const COLOR_LOOKUP = {
@@ -174,8 +165,6 @@ export {
   E_VehiclePaintColor,
   E_VehiclePaintColorHumanReadable,
   E_TrophyType,
-  E_CarDexMode,
-  TrophyTypeOrder,
   typePriority,
   COLOR_LOOKUP,
   colorValues,

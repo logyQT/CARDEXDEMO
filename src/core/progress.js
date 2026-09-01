@@ -1,21 +1,23 @@
-const updateProgressBar = (owned, total, percentEl, barFillEl) => {
+import { PROGRESS_BAR, PROGRESS_BAR_TEXT } from "../domRefs.js";
+
+const updateProgressBar = ({ owned, total }) => {
   let pct = total === 0 ? 0 : (owned / total) * 100;
   pct = String(pct.toFixed(1)).replace(/\.0$/, "");
-  percentEl.textContent = `${pct}% (${owned}/${total})`;
-  barFillEl.style.width = pct + "%";
+  PROGRESS_BAR_TEXT.textContent = `${pct}% (${owned}/${total})`;
+  PROGRESS_BAR.style.width = pct + "%";
 };
 
-const updateTrophyProgress = (slots, mode, PROGRESS_BAR_TEXT, PROGRESS_BAR) => {
+const updateTrophyProgress = ({ slots, mode }) => {
   if (mode === "inventory" || mode === "stats") {
-    updateOverallTrophyProgress(slots, PROGRESS_BAR_TEXT, PROGRESS_BAR);
+    updateOverallTrophyProgress({ slots });
     return;
   }
   const modeSlots = Object.values(slots[mode]);
   const owned = modeSlots.filter((slot) => slot.owned).length;
-  updateProgressBar(owned, modeSlots.length, PROGRESS_BAR_TEXT, PROGRESS_BAR);
+  updateProgressBar({ owned, total: modeSlots.length });
 };
 
-const updateOverallTrophyProgress = (slots, PROGRESS_BAR_TEXT, PROGRESS_BAR) => {
+const updateOverallTrophyProgress = ({ slots }) => {
   let owned = 0;
   let total = 0;
   for (const mode in slots) {
@@ -24,7 +26,7 @@ const updateOverallTrophyProgress = (slots, PROGRESS_BAR_TEXT, PROGRESS_BAR) => 
     owned += modeSlots.filter((slot) => slot.owned).length;
     total += modeSlots.length;
   }
-  updateProgressBar(owned, total, PROGRESS_BAR_TEXT, PROGRESS_BAR);
+  updateProgressBar({ owned, total });
 };
 
 export { updateTrophyProgress, updateOverallTrophyProgress };

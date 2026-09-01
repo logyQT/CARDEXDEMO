@@ -61,34 +61,39 @@ const matchesYear = (trophy, yearExprs) => {
   const year = trophy.year;
   if (year == null) return false;
   return yearExprs.some((expr) => {
-    switch (expr.type) {
-      case "exact":
-        return year === expr.year;
-      case "range":
-        return year >= expr.start && year <= expr.end;
-      case "compare":
-        if (expr.op === ">") return year > expr.year;
-        if (expr.op === "<") return year < expr.year;
-        if (expr.op === ">=") return year >= expr.year;
-        if (expr.op === "<=") return year <= expr.year;
-        return false;
-      default:
-        return false;
+    if (expr && typeof expr === "object" && expr.type) {
+      switch (expr.type) {
+        case "exact":
+          return year === expr.year;
+        case "range":
+          return year >= expr.start && year <= expr.end;
+        case "compare":
+          if (expr.op === ">") return year > expr.year;
+          if (expr.op === "<") return year < expr.year;
+          if (expr.op === ">=") return year >= expr.year;
+          if (expr.op === "<=") return year <= expr.year;
+          return false;
+        default:
+          return false;
+      }
     }
+    return year === Number(expr);
   });
 };
 
 export const filterTrophySlots = (trophies = {}, criteria = {}) => {
   if (typeof trophies !== "object" || trophies === null) return {};
+  const normalize = (v) => String(v).toLowerCase().replace(/-/g, " ");
   return Object.fromEntries(
     Object.entries(trophies).filter(([, trophy]) =>
       Object.entries(criteria).every(([key, values]) => {
-        if (!Array.isArray(values)) return true;
+        if (!Array.isArray(values) || values.length === 0) return true;
         if (key === "year") return matchesYear(trophy, values);
-        if (key === "owned") return values.includes(Boolean(trophy.owned));
+        if (key === "owned") return values.some((val) => String(Boolean(trophy.owned)) === String(val));
         const field = trophy[key];
         if (field == null) return false;
-        return values.some((val) => String(field).toLowerCase().includes(String(val).toLowerCase()));
+        const normalizedField = normalize(field);
+        return values.some((val) => normalizedField.includes(normalize(val)));
       })
     )
   );
