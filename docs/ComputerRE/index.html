@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CarDex In-Game Computer Investigation</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #1a1a1a;
+        color: #e0e0e0;
+        padding: 20px;
+        line-height: 1.6;
+      }
+      .container {
+        max-width: 900px;
+        margin: auto;
+        background: #252525;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        border: 1px solid #333;
+      }
+      h1,
+      h2,
+      h3 {
+        color: #f0f0f0;
+        text-shadow: 1px 1px 2px #000;
+        border-bottom: 2px solid #333;
+        padding-bottom: 5px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+      h2 {
+        font-size: 1.5em;
+      }
+      h3 {
+        font-size: 1.2em;
+        border-bottom: none;
+      }
+      a {
+        color: #4a90e2;
+        text-decoration: none;
+        font-weight: bold;
+      }
+      a:hover {
+        text-decoration: underline;
+        color: #79b0f5;
+      }
+      ol,
+      ul {
+        margin-left: 25px;
+        padding-left: 0;
+      }
+      li {
+        margin-bottom: 10px;
+      }
+      strong,
+      b {
+        color: #ffcc00;
+      }
+      .path {
+        color: #79b0f5;
+        background-color: #333333;
+        padding: 2px 4px;
+        border-radius: 4px;
+        font-family: Consolas, monospace;
+      }
+      pre,
+      code {
+        background-color: #333333;
+        color: #ffcc00;
+        padding: 3px 6px;
+        border-radius: 4px;
+        font-family: Consolas, monospace;
+        white-space: pre-wrap;
+      }
+      pre {
+        padding: 10px;
+        border: 1px solid #444;
+        overflow-x: auto;
+        line-height: 1.5;
+      }
+      p code {
+        color: #79b0f5;
+        background-color: #333333;
+        padding: 2px 4px;
+      }
+      hr {
+        border: 0;
+        height: 1px;
+        background-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(74, 144, 226, 0.75), rgba(0, 0, 0, 0));
+        margin: 20px 0;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 15px 0;
+      }
+      th,
+      td {
+        border: 1px solid #444;
+        padding: 8px 12px;
+        text-align: left;
+        vertical-align: top;
+      }
+      th {
+        background: #333333;
+        color: #ffcc00;
+      }
+      .tag {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 0.85em;
+        font-weight: bold;
+      }
+      .tag-go {
+        background: #1f6f3f;
+        color: #fff;
+      }
+      .tag-warn {
+        background: #8a5a00;
+        color: #fff;
+      }
+      .tag-stop {
+        background: #7a2a2a;
+        color: #fff;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1 id="-cardex-in-game-computer-investigation">🖥️ CarDex In-Game Computer Investigation</h1>
+
+      <p>
+        <strong>Goal:</strong> Determine whether a <strong>CarDex app can run natively inside the in-game office computer</strong>
+        without rewriting the game's existing functionality — and if not, confirm the fallback (a standalone CarDex overlay
+        widget).
+      </p>
+      <p><strong>Runs on:</strong> the machine with Car Dealer Simulator installed (not this workstation).</p>
+
+      <hr />
+
+      <h2 id="0-what-we-are-deciding">0. What We Are Deciding</h2>
+      <p>The office computer is a world-space UMG widget. Everything hinges on <strong>one question</strong>:</p>
+      <blockquote>
+        <em>Is the computer a navigable "app launcher / OS screen" (a list of app buttons that open apps), or a fixed set of
+        screens hard-wired into the widget graph?</em>
+      </blockquote>
+      <p>That answer selects the path:</p>
+      <table>
+        <tr>
+          <th>Path</th>
+          <th>What it means</th>
+          <th>Rewrite needed?</th>
+        </tr>
+        <tr>
+          <td><strong>A — Standalone overlay widget</strong></td>
+          <td>A UMG CarDex widget we spawn on top (via hotkey or on computer interact). Touches nothing the game already does.</td>
+          <td>No</td>
+        </tr>
+        <tr>
+          <td><strong>B1 — Extend a real launcher</strong></td>
+          <td>If the computer is a data-driven app launcher, add a CarDex entry + button alongside the existing apps.</td>
+          <td>No</td>
+        </tr>
+        <tr>
+          <td><strong>B2 — Replace/hook a fixed screen</strong></td>
+          <td>Swap hard-wired screens. Would mean recreating existing computer functionality.</td>
+          <td class="tag-warn" style="background:none;color:#ffcc00">Yes (down-prioritized)</td>
+        </tr>
+      </table>
+      <p>
+        <strong>Decision rule:</strong> pursue B2 <strong>only</strong> if the computer is confirmed to be a navigable launcher
+        and B1 applies. If it is a fixed screen, <strong>stop at Path A</strong>. B2 is out of scope by default because it
+        requires rewriting existing functionality.
+      </p>
+
+      <hr />
+
+      <h2 id="1-prerequisites">1. Prerequisites</h2>
+      <ul>
+        <li><strong>FModel</strong> (latest) — <a href="https://fmodel.app/" rel="nofollow">fmodel.app</a></li>
+        <li>
+          <strong>ZenTools</strong> (by Archengius) — needed if FModel cannot directly export cooked Zen/IOStore assets.
+        </li>
+        <li>
+          <strong>UE4SS zDEV build</strong> — required for the runtime dumper and the Lua probe. You already use UE4SS for
+          SaveSync. The dev build is what enables the UHT/C++ header dumper.
+        </li>
+        <li>The game at <span class="path">CarDealerSimulator/Binaries/Win64/</span>.</li>
+      </ul>
+
+      <hr />
+
+      <h2 id="2-file-inspection-with-fmodel">2. File Inspection with FModel</h2>
+      <ol>
+        <li>Launch FModel and open the CDS installation, pointing it at the game's <span class="path">Content/Paks/</span> folder.</li>
+        <li>
+          If property names are unversioned, load the <code>*.usmap</code> mapping generated by the UE4SS dumper
+          (Settings → Mappings → custom).
+        </li>
+        <li>
+          Use the folder tree (or search) to look for the computer/UI assets under the <span class="path">Content/UI</span>,
+          <span class="path">Content/Widgets</span>, or <span class="path">Content/Blueprint</span> trees.
+        </li>
+      </ol>
+
+      <h3>Search keywords</h3>
+      <pre><code>Computer  PC  Screen  Desktop  OS  Launcher  App  Ui  UI  Widget  HUD  Office</code></pre>
+
+      <h3>What to collect</h3>
+      <ul>
+        <li>The <strong>Widget Blueprint</strong> class for the computer's main screen.</li>
+        <li>The <strong>owning actor/BluePrint</strong> (the physical computer actor) and its <strong>interaction component</strong>.</li>
+        <li>Any child widget classes that look like individual "apps" (finance, paint, phone, etc.).</li>
+      </ul>
+      <p>
+        Export the relevant <code>.uasset</code> files and open them in ZenTools/UAssetGUI to introspect the widget graph and
+        the owning actor.
+      </p>
+
+      <h2 id="3-runtime-probe-with-ue4ss">3. Runtime Probe with UE4SS</h2>
+      <p>
+        File inspection shows <em>what</em> exists; the runtime probe shows <em>what is actually instantiated when you interact
+        with the computer</em>. This is the most definitive evidence for the launcher-vs-fixed-screen question.
+      </p>
+      <p><strong>Probe plan (single comprehensive script):</strong></p>
+      <ol>
+        <li>When you interact with / look at the computer, find the computer's widget instance in memory.</li>
+        <li>Print its class name and its child widget tree (reflection).</li>
+        <li>List all loaded <code>UUserWidget</code> classes whose names contain computer/app/screen/OS keywords.</li>
+        <li>Look for any representation of an "app list / launcher" (a grid/tile of buttons that open other widgets via
+        <code>Create Widget(class)</code>).</li>
+      </ol>
+
+      <h3>The Lua probe script</h3>
+      <p>Save the following as <span class="path">ComputerProbe/main.lua</span> inside your UE4SS <span class="path">Mods/</span> folder, and enable it in <span class="path">mods.txt</span> by adding <code>ComputerProbe: 1</code>. Trigger it with the default key (<strong>F10</strong>, overridable in <code>RegisterKeyBind</code>).</p>
+      <p><em>This script is a starting point. Class names and reflection APIs vary between UE4SS versions and game builds — adjust accordingly.</em></p>
+      <pre><code>local UEHelpers = require("UEHelpers")
+
+-- Target keywords that identify the computer / app / screen widgets.
+local KEYWORDS = { "Computer", "PC", "Screen", "Desktop", "OS", "Launcher", "App", "Widget", "Office" }
+
+print("[ComputerProbe] Loaded. Press F10 while facing the office computer.")
+
+local function matchesKeywords(name)
+    if not name then return false end
+    for _, kw in ipairs(KEYWORDS) do
+        if name:lower():find(kw:lower(), 1, true) then
+            return true
+        end
+    end
+    return false
+end
+
+-- Recursively print a widget's class + children up to a depth limit.
+local function dumpWidgetTree(widget, depth, maxDepth)
+    if not widget or depth > maxDepth then return end
+    local class = widget:GetClass()
+    local name = widget:GetName()
+    local pad = string.rep("  ", depth)
+    print(pad .. class:GetName() .. " :: " .. name)
+    -- UWidget has a 'Slate' slot hierarchy; iterate child widgets if present.
+    local prop = widget:FindProperty("WidgetTree")
+    if prop then
+        local tree = widget:GetPropertyValue("WidgetTree")
+        -- Recursively walk known container widgets.
+        local children = widget:GetAllChildren()
+        if children then
+            for _, child in ipairs(children) do
+                dumpWidgetTree(child:GetOuter() or child, depth + 1, maxDepth)
+            end
+        end
+    end
+end
+
+local function onComputerActivated()
+    -- Find the player controller and all user widgets to identify the computer.
+    local pc = UEHelpers.GetPlayerController()
+    if not pc then print("[ComputerProbe] No player controller."); return end
+
+    print("=== [ComputerProbe] Loaded user widget classes ===")
+    -- Collect loaded widget classes by scanning the object tree.
+    local all = StaticFindObject("UserWidget")
+    -- In practice, iterate via the object database / registry in later UE4SS:
+    -- see FindAllObjects / ObjectDumper docs for your UE4SS version.
+    if all then dumpWidgetTree(all, 0, 6) end
+
+    print("=== [ComputerProbe] Filtered by keywords ===")
+    -- Deep search of the whole object tree for matching classes is available
+    -- via FindAllObjects() in newer UE4SS; print those matching KEYWORDS here.
+end
+
+RegisterKeyBind(RegisterKey("F10"), function()
+    onComputerActivated()
+end)
+</code></pre>
+      <p><strong>Key bind note:</strong> the exact key name and the object-listing API differ across UE4SS releases. In newer
+      UE4SS, replace the placeholder object listing with the object-database iterator (e.g. <code>FindAllObjects</code> /
+      the object dumper) to enumerate every loaded <code>UUserWidget</code> and filter by <span class="path">KEYWORDS</span>.</p>
+      <blockquote>
+        Because RE must run on the machine that has the game, <em>iterate here</em>: run the probe, paste the printed class
+        names/widget tree back here, and we refine the script to target what you actually see.
+      </blockquote>
+
+      <hr />
+
+      <h2 id="4-findings-checklist">4. Findings Checklist</h2>
+      <p>Fill this in as you gather evidence:</p>
+      <table>
+        <tr>
+          <th>#</th>
+          <th>Question</th>
+          <th>Finding / evidence</th>
+        </tr>
+        <tr>
+          <td>1</td><td>Engine version &amp; asset format (C++ vs BP, Zen/IOStore)?</td><td></td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>Computer main widget class name &amp; path?</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>Owning actor (physical computer) class?</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td>Interaction component?</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td>Is there an app-list / launcher widget (grid/tile of buttons)?</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td>List the app / screen child widget classes.</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td>How does an app open? (<code>Create Widget</code> by class, or fixed graph?)</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td>Can widgets be added to the launcher list at runtime (UE4SS)?</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>9</td>
+          <td>Where are the trophy/photo textures? (game assets vs our .webp set)</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>10</td>
+          <td>Overall verdict: launcher (B1) or fixed screen (Path A)?</td>
+          <td></td>
+        </tr>
+      </table>
+
+      <hr />
+
+      <h2 id="5-decision-gate">5. Decision Gate</h2>
+      <table>
+        <tr><th>Finding</th><th>Outcome</th></tr>
+        <tr>
+          <td>Computer is a <strong>data-driven launcher</strong> we can add entries to</td>
+          <td><span class="tag tag-go">GO</span> B1 — build a native CarDex "app" added to the launcher. No rewrite.</td>
+        </tr>
+        <tr>
+          <td>Computer is a <strong>fixed set of screens</strong></td>
+          <td><span class="tag tag-stop">STOP</span> Do not rewrite the computer. Fall back to <strong>Path A</strong> (standalone CarDex overlay widget).</td>
+        </tr>
+        <tr>
+          <td>Cannot locate/inspect the computer at all</td>
+          <td><span class="tag tag-warn">WARN</span> Recheck asset paths / mappings; if still blocked, default to Path A.</td>
+        </tr>
+      </table>
+
+      <hr />
+
+      <h2 id="6-tools-and-references">6. Tools &amp; References</h2>
+      <ul>
+        <li><a href="https://fmodel.app/" rel="nofollow">FModel</a></li>
+        <li><a href="https://docs.ue4ss.com/" rel="nofollow">UE4SS documentation</a></li>
+        <li>UE4SS non-dev + zDEV releases — <a href="https://github.com/UE4SS-RE/RE-UE4SS/releases" rel="nofollow">GitHub releases</a></li>
+        <li>ZenTools (by Archengius) — via the UE modding community / Discord.</li>
+        <li>
+          Existing in-game UI mods for CDS to reference: <strong>Faulty Overlay</strong> (UMG overlay) and
+          <strong>Dealership Plus</strong> (UE4SS Blueprint mod) on Nexus.
+        </li>
+        <li>
+          Your existing mod setup: <a href="../SaveSync/">SaveSync / UE4SS install guide</a>.
+        </li>
+      </ul>
+
+      <p><strong>Next step after this doc:</strong> run the file inspection and the Lua probe on your game machine, then paste the
+      findings (checklist + widget tree) back here so we can decide B1 vs Path A and draft the mod plan.</p>
+    </div>
+  </body>
+</html>
