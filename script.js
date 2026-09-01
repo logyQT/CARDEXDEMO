@@ -1,15 +1,26 @@
-import { renderStats, getStats, createInternalSaveData, getPaginationInfo, sortTrophies, getSaveObject, getDatabase, disableDrag, generateAllTrophySlots, saveToLocalStorage, loadFromLocalStorage, validateInternalSaveData, removeFromLocalStorage, exportToJSON, importFromJSON, updateTrophyProgress, getAllTrophies, updateOverallTrophyProgress, autoFillTrophySlots, renderSlots } from "./modules/index.js";
-import { SEARCH_OPTIONS_FILTERS, IMPORT_SAVE_FILE_INPUT, SHARE_BUTTON, IMPORT_SAVE_FILE_BUTTON, PROGRESS_BAR, PROGRESS_BAR_TEXT, PAGINATION_CONTROLS, VERSION_TEXT, RESET_BUTTON, IMPORT_JSON_BUTTON, DOWNLOAD_JSON_BUTTON, TROPHY_AUTOFILL_BUTTON, ADD_TROPHY_BUTTON, SEARCH_BAR, TROPHY_GRID, COPY_SHARE_LINK_BUTTON, CLOSE_SHARE_LINK_BUTTON, SHARE_LINK_CONTAINER, SHARE_LINK_INPUT, AUTOUPDATE_LOCATION_PICKER, SORTING_BUTTONS, SEARCH_OPTIONS_BUTTON, SEARCH_OPTIONS_MODAL, CLEAR_SEARCH_OPTIONS_BUTTON, APPLY_SEARCH_OPTIONS_BUTTON } from "./utils/domRefs.js";
-import { GAME_VERSION, VERSION, VALID_MODES } from "./utils/constants.js";
-import { toastManager } from "./utils/toastManager.js";
-import { E_VehiclePaintColor, E_TrophyType, E_VehiclePaintColorHumanReadable } from "./utils/mappings.js";
+import { renderStats } from "./src/ui/renderTrophies.js";
+import { renderSlots } from "./src/ui/renderTrophies.js";
+import { getStats } from "./src/core/stats.js";
+import { createInternalSaveData, validateInternalSaveData, exportToJSON, importFromJSON, saveToLocalStorage, loadFromLocalStorage, removeFromLocalStorage } from "./src/core/saveData.js";
+import { getPaginationInfo } from "./src/ui/pagination.js";
+import { sortTrophies } from "./src/core/trophySorting.js";
+import { getDatabase } from "./src/persistence/getDatabase.js";
+import { disableDrag } from "./src/ui/disableDrag.js";
+import { generateAllTrophySlots, autoFillTrophySlots } from "./src/core/trophySlots.js";
+import { getAllTrophies } from "./src/persistence/getAllTrophies.js";
+import { getSaveObject } from "./src/persistence/getSaveObject.js";
+import { updateTrophyProgress, updateOverallTrophyProgress } from "./src/core/progress.js";
+import { IMPORT_SAVE_FILE_INPUT, SHARE_BUTTON, IMPORT_SAVE_FILE_BUTTON, PROGRESS_BAR, PROGRESS_BAR_TEXT, PAGINATION_CONTROLS, VERSION_TEXT, RESET_BUTTON, IMPORT_JSON_BUTTON, DOWNLOAD_JSON_BUTTON, TROPHY_AUTOFILL_BUTTON, ADD_TROPHY_BUTTON, SEARCH_BAR, TROPHY_GRID, COPY_SHARE_LINK_BUTTON, CLOSE_SHARE_LINK_BUTTON, SHARE_LINK_CONTAINER, SHARE_LINK_INPUT, AUTOUPDATE_LOCATION_PICKER, SORTING_BUTTONS, SEARCH_OPTIONS_BUTTON, SEARCH_OPTIONS_MODAL, SEARCH_OPTIONS_FILTERS, CLEAR_SEARCH_OPTIONS_BUTTON, APPLY_SEARCH_OPTIONS_BUTTON } from "./src/domRefs.js";
+import { GAME_VERSION, VERSION, VALID_MODES } from "./src/constants.js";
+import { toastManager } from "./src/toastManager.js";
+import { E_VehiclePaintColor, E_TrophyType, E_VehiclePaintColorHumanReadable, cars as carData } from "./src/data/index.js";
 import { encodeData, decodeData } from "./src/compression/compression.js";
 import { folderWatchdog } from "./src/autoUpdate/folderWatchdog.js";
 import { autoUpdate } from "./src/autoUpdate/autoUpdate.js";
 import { cSaveObject } from "./src/autoUpdate/cSaveObject.js";
 import { getDirHandle, saveDirHandle } from "./src/autoUpdate/fsHandler.js";
+import { sortHandler } from "./src/sortHandler.js";
 
-import { carData } from "./carData.js";
 import { MultiSelectDropdown } from "./src/ui/components/MultiSelectDropdown/MultiSelectDropdown.js";
 
 let dropdownBrands = Array.from(new Set(carData.map((car) => car.brand))).map((brand) => {
@@ -266,7 +277,6 @@ SEARCH_OPTIONS_BUTTON.addEventListener("click", () => {
   };
 });
 
-import { sortHandler } from "./utils/sortHandler.js";
 for (const button of SORTING_BUTTONS) {
   button.addEventListener("click", () => {
     const property = button.getAttribute("data-sort");

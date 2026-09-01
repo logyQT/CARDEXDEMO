@@ -1,5 +1,5 @@
-import { carData } from "../../carData.js";
-import { VERSION } from "../../utils/constants.js";
+import { carWithName as carData } from "../data/index.js";
+import { VERSION } from "../constants.js";
 
 const BASE_YEAR = 1970;
 const NULL_ID = 0;
@@ -100,7 +100,7 @@ export function unpackData(packed) {
     year = yearOffset + BASE_YEAR;
   }
 
-  const carData = REVERSE_CAR_MAP[carID] || { name: null, brand: null, model: null };
+  const carInfo = REVERSE_CAR_MAP[carID] || { name: null, brand: null, model: null };
 
   const color = colorID === NULL_ID ? null : REVERSE_CAT_MAPS.color[colorID];
   const type = typeID === NULL_ID ? null : REVERSE_CAT_MAPS.type[typeID];
@@ -127,11 +127,11 @@ export function unpackData(packed) {
   }
 
   return {
-    key: keysFromMode(mode, carData),
+    key: keysFromMode(mode, carInfo),
     value: {
-      name: carData.name,
-      brand: carData.brand,
-      model: carData.model,
+      name: carInfo.name,
+      brand: carInfo.brand,
+      model: carInfo.model,
       color,
       type,
       year,

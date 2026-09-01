@@ -1,4 +1,4 @@
-import { walkObjectParseJson } from "../../modules/index.js";
+import { walkObjectParseJson } from "../utils/walkObjectParseJson.js";
 
 const cSaveObject = async (file) => {
   if (!file) {
